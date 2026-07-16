@@ -36,6 +36,7 @@ source "$MODULES_DIR/tutorials.sh"
 source "$MODULES_DIR/clone.sh"
 source "$MODULES_DIR/help.sh"
 source "$MODULES_DIR/autorun.sh"
+source "$MODULES_DIR/dashboard-tui.sh"
 source "$MODULES_DIR/menu.sh"
 
 # On Windows, add Docker CLI to PATH if not found
@@ -106,6 +107,7 @@ case "${1:-}" in
     drive)       shift; show_usb_info ;;
     install-to)  shift; install_to_drive "$@" ;;
     install-tools|tools) install_tools ;;
+    dashboard)   server_dashboard ;;
     help)        show_help ;;
     *)           main_menu ;;
 esac

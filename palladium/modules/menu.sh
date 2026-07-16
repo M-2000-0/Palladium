@@ -80,7 +80,7 @@ main_menu() {
         else
             echo -e "  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label"
         fi
-        echo -e "  ${DIM}Type '${CYAN}t${DIM}' to install all tools${NC}"
+        echo -e "  ${DIM}Type '${CYAN}t${DIM}' tools  '${CYAN}d${DIM}' dashboard${NC}"
         echo ""
         read -p "  Select option: " choice
         case $choice in
@@ -101,6 +101,7 @@ main_menu() {
             15) clone_menu ;;
             16) tools_menu ;;
             17) tutorials_menu ;;
+            d|D) server_dashboard ;;
             t|T) install_tools ;;
             0|q|Q) echo -e "${GREEN}Goodbye!${NC}"; exit 0 ;;
             *)  echo -e "${RED}Invalid option${NC}"; sleep 1 ;;
@@ -613,5 +614,6 @@ show_help() {
     echo "  palladium cleanup          Free up Docker space"
     echo "  palladium setup-autorun    Enable plug-and-play on USB"
     echo "  palladium install-tools    Install Git, Docker, Python, Node.js, curl & more"
+    echo "  palladium dashboard        Live server dashboard (Claude Code-style TUI)"
     echo ""
 }
