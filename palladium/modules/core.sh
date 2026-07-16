@@ -112,3 +112,15 @@ press_enter() {
     echo ""
     read -p "Press Enter to continue..."
 }
+
+ensure_docker_in_path() {
+    if ! command -v docker &> /dev/null; then
+        local docker_cmd
+        docker_cmd=$(find_docker_cli 2>/dev/null || true)
+        if [ -n "$docker_cmd" ]; then
+            local docker_dir
+            docker_dir=$(dirname "$docker_cmd")
+            export PATH="$docker_dir:$PATH"
+        fi
+    fi
+}

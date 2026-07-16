@@ -3,7 +3,7 @@ main_menu() {
     while true; do
         local running=0
         local docker_ok=false
-        if command -v docker &> /dev/null && docker info &> /dev/null 2>&1; then
+        if find_docker_cli &> /dev/null && docker info &> /dev/null 2>&1; then
             docker_ok=true
             running=$(docker ps --format '{{.Names}}' 2>/dev/null | wc -l)
         fi

@@ -28,6 +28,7 @@ source "$MODULES_DIR/data.sh"
 source "$MODULES_DIR/security.sh"
 source "$MODULES_DIR/network.sh"
 source "$MODULES_DIR/monitor.sh"
+source "$MODULES_DIR/packages.sh"
 source "$MODULES_DIR/updates.sh"
 source "$MODULES_DIR/notify.sh"
 source "$MODULES_DIR/profiles.sh"
@@ -36,6 +37,9 @@ source "$MODULES_DIR/clone.sh"
 source "$MODULES_DIR/help.sh"
 source "$MODULES_DIR/autorun.sh"
 source "$MODULES_DIR/menu.sh"
+
+# On Windows, add Docker CLI to PATH if not found
+ensure_docker_in_path
 
 mkdir -p "$DATA_DIR" "$INSTALLED_DIR" "$MARKETPLACE_DIR" "$DATA_DIR/workspace/databases" "$DATA_DIR/workspace/exports" "$DATA_DIR/workspace/queries"
 
@@ -57,7 +61,7 @@ if [ ! -f "$DATA_DIR/.initialized" ]; then
     show_banner
     echo -e "  ${CYAN}Welcome to Palladium!${NC}"
     echo ""
-    if ! command -v docker &> /dev/null; then
+    if ! find_docker_cli &> /dev/null; then
         echo -e "  Docker is required. Let's install it."
         echo ""
         if confirm "  Install Docker now?"; then

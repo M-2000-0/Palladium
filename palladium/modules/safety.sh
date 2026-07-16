@@ -34,7 +34,9 @@ check_storage() {
 }
 
 check_docker_available() {
-    if ! command -v docker &> /dev/null; then
+    local docker_cmd
+    docker_cmd=$(find_docker_cli)
+    if [ -z "$docker_cmd" ]; then
         echo -e "${RED}  Docker is not installed.${NC}"
         echo ""
         if confirm "  Install Docker now?"; then
@@ -42,6 +44,13 @@ check_docker_available() {
             return $?
         fi
         return 1
+    fi
+
+    # Ensure docker CLI is in PATH for subsequent commands
+    if ! command -v docker &> /dev/null; then
+        local docker_dir
+        docker_dir=$(dirname "$docker_cmd")
+        export PATH="$docker_dir:$PATH"
     fi
 
     if ! docker info &> /dev/null 2>&1; then
