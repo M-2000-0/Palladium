@@ -1,7 +1,7 @@
 @echo off
 title Palladium Portable Server
-mode con: cols=90 lines=30
 color 0B
+mode con: cols=90 lines=30 2>nul
 
 echo.
 echo  ============================================================
@@ -16,12 +16,34 @@ echo     Plug in. Power up. Host anything.
 echo  ============================================================
 echo.
 echo  Starting Palladium...
-echo  Close this window to stop the server.
 echo.
 
 cd /d "%~dp0palladium"
-call palladium.bat
 
+REM Try Git Bash first (most compatible)
+if exist "C:\Program Files\Git\bin\bash.exe" (
+    "C:\Program Files\Git\bin\bash.exe" palladium
+    goto done
+)
+
+REM Fallback: any bash in PATH (WSL, etc.)
+where bash >nul 2>nul
+if %errorlevel% equ 0 (
+    bash palladium
+    goto done
+)
+
+REM WSL direct
+where wsl >nul 2>nul
+if %errorlevel% equ 0 (
+    wsl -e bash palladium
+    goto done
+)
+
+REM Last resort: PowerShell
+powershell -NoProfile -ExecutionPolicy Bypass -File palladium.ps1
+
+:done
 echo.
 echo  Palladium has stopped. You may close this window.
 pause
