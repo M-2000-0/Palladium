@@ -1,42 +1,4 @@
 #!/bin/bash
-build_menu_block() {
-    local docker_ok=$1 running=$2 drive_label=$3
-    local block=""
-    block+="  ${BOLD}━━━ Quick Start ━━━${NC}\n"
-    block+="  ${BOLD}[1]${NC}  Pre-built stacks\n"
-    block+="  ${BOLD}[2]${NC}  Install a service\n"
-    block+="  ${BOLD}[3]${NC}  Manage services\n"
-    block+="\n"
-    block+="  ${BOLD}━━━ Platform ━━━${NC}\n"
-    block+="  ${BOLD}[4]${NC}  ${MAGENTA}Marketplace${NC}       Browse & install tools\n"
-    block+="  ${BOLD}[5]${NC}  ${MAGENTA}AI Toolkit${NC}         Local LLMs, API connectors\n"
-    block+="  ${BOLD}[6]${NC}  ${MAGENTA}Data Dashboard${NC}     Manage your data\n"
-    block+="  ${BOLD}[7]${NC}  ${MAGENTA}Supabase${NC}           Cloud database\n"
-    block+="\n"
-    block+="  ${BOLD}━━━ System ━━━${NC}\n"
-    block+="  ${BOLD}[8]${NC}  Security & encryption\n"
-    block+="  ${BOLD}[9]${NC}  Network & access\n"
-    block+="  ${BOLD}[10]${NC} Monitoring & limits\n"
-    block+="  ${BOLD}[11]${NC} Updates & versions\n"
-    block+="  ${BOLD}[12]${NC} Notifications & alerts\n"
-    block+="\n"
-    block+="  ${BOLD}━━━ Admin ━━━${NC}\n"
-    block+="  ${BOLD}[13]${NC} Profiles & users\n"
-    block+="  ${BOLD}[14]${NC} Backup & restore\n"
-    block+="  ${BOLD}[15]${NC} Clone & migrate\n"
-    block+="  ${BOLD}[16]${NC} Drives & install\n"
-    block+="  ${BOLD}[17]${NC} Tutorials\n"
-    block+="  ${BOLD}[0]${NC}  Exit\n"
-
-    if $docker_ok; then
-        block+="\n  ${GREEN}Docker: Running${NC}  |  ${CYAN}Services: $running active${NC}$drive_label\n"
-    else
-        block+="\n  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label\n"
-    fi
-
-    echo -e "$block"
-}
-
 main_menu() {
     while true; do
         local running=0
@@ -61,34 +23,64 @@ main_menu() {
 
         clear 2>/dev/null || true
 
-        # Build left column: banner
-        local left
-        left="\n"
-        left+="${CYAN}${BOLD}██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗${NC}\n"
-        left+="${CYAN}${BOLD}██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║${NC}\n"
-        left+="${CYAN}${BOLD}██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║${NC}\n"
-        left+="${CYAN}${BOLD}██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║${NC}\n"
-        left+="${CYAN}${BOLD}██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║${NC}\n"
-        left+="${CYAN}${BOLD}╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝${NC}\n"
-        left+="${NC}\n"
-        left+="  ${CYAN}${BOLD}Portable Server Manager${NC}\n"
-        left+="  ${DIM}Plug in. Power up. Host anything.${NC}\n"
-
-        # Build right column: menu items
-        local right
-        right=$(build_menu_block "$docker_ok" "$running" "$drive_label")
-
-        # Display side by side using paste + while loop
-        local banner_width=66
-        paste -d $'\x1f' <(echo -e "$left") <(echo -e "$right") | while IFS=$'\x1f' read -r lline rline; do
-            local clean=$(echo -e "$lline" | sed 's/\x1b\[[0-9;]*m//g')
-            local chars=$(echo -n "$clean" | wc -m)
-            local pad=$((banner_width - chars))
-            [ "$pad" -lt 0 ] && pad=0
-            printf "%s%*s  %s\n" "$lline" "$pad" "" "$rline"
-        done
+        # Banner
+        echo ""
+        echo -e "${CYAN}${BOLD}██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗${NC}"
+        echo -e "${CYAN}${BOLD}██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║${NC}"
+        echo -e "${CYAN}${BOLD}██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║${NC}"
+        echo -e "${CYAN}${BOLD}██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║${NC}"
+        echo -e "${CYAN}${BOLD}██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║${NC}"
+        echo -e "${CYAN}${BOLD}╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝${NC}"
+        echo -e "${DIM}  Portable Server Manager — Plug in. Power up. Host anything.${NC}"
         echo ""
 
+        # Menu items: 2-column column-major grid
+        local items=(
+            "1:Pre-built stacks"
+            "2:Install a service"
+            "3:Manage services"
+            "4:Marketplace"
+            "5:AI Toolkit"
+            "6:Data Dashboard"
+            "7:Supabase"
+            "8:Security & encryption"
+            "9:Network & access"
+            "10:Monitoring & limits"
+            "11:Updates & versions"
+            "12:Notifications & alerts"
+            "13:Profiles & users"
+            "14:Backup & restore"
+            "15:Clone & migrate"
+            "16:Drives & install"
+            "17:Tutorials"
+            "0:Exit"
+        )
+        local total=${#items[@]}
+        local rows=$(( (total + 1) / 2 ))
+
+        for row in $(seq 0 $((rows - 1))); do
+            local left_item="${items[$row]}"
+            local left_num="${left_item%%:*}"
+            local left_label="${left_item#*:}"
+            printf "  ${BOLD}[%2s]${NC}  %-26s" "$left_num" "$left_label"
+
+            local right_idx=$((row + rows))
+            if [ $right_idx -lt $total ]; then
+                local right_item="${items[$right_idx]}"
+                local right_num="${right_item%%:*}"
+                local right_label="${right_item#*:}"
+                printf "${BOLD}[%2s]${NC}  %s" "$right_num" "$right_label"
+            fi
+            printf "\n"
+        done
+
+        echo ""
+        if $docker_ok; then
+            echo -e "  ${GREEN}Docker: Running${NC}  |  ${CYAN}Services: $running active${NC}$drive_label"
+        else
+            echo -e "  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label"
+        fi
+        echo ""
         read -p "  Select option: " choice
         case $choice in
             1)  stacks_menu ;;

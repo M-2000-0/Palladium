@@ -6,6 +6,9 @@ param(
     [int]$PollInterval = 3
 )
 
+Add-Type -AssemblyName Microsoft.VisualBasic
+Add-Type -AssemblyName System.Windows.Forms
+
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $usbRoot = (Get-Item $scriptPath).Root.Name.TrimEnd('\')
 $markerPath = Join-Path $usbRoot $MarkerFile
@@ -20,22 +23,30 @@ while ($true) {
         "USB detected at $(Get-Date) - launching Palladium" | Out-File $traceFile -Append
 
         if (Test-Path $batPath) {
-            # Use Shell.Application to open the terminal in the user's session
-            $shell = New-Object -ComObject "Shell.Application"
-            $shell.ShellExecute("cmd.exe", "/c `"$batPath`"", "", "open", 1)
+            # Launch Palladium in a visible terminal
+            [System.Diagnostics.Process]::Start("cmd.exe", "/c `"$batPath`"") | Out-Null
 
-            # Give the terminal a moment to open, then bring it to front
-            Start-Sleep 2
+            # Wait for the window to appear
+            Start-Sleep 3
+
+            # Close any File Explorer windows showing this drive
             try {
                 $shell = New-Object -ComObject "Shell.Application"
-                # Minimize all windows briefly so the terminal becomes visible
-                $shell.MinimizeAll()
-                Start-Sleep 0.5
-                # Find our terminal window and activate it
-                $windows = (New-Object -ComObject "Shell.Application").Windows()
-                # Restore the minimized windows
-                $shell.UndoMinimizeALL()
+                $shell.Windows() | Where-Object {
+                    try { $_.LocationURL -match "^file:///$($usbRoot.Replace('\','/'))" } catch { $false }
+                } | ForEach-Object { $_.Quit() }
             } catch {}
+
+            # Bring Palladium terminal to foreground
+            try {
+                [Microsoft.VisualBasic.Interaction]::AppActivate("Palladium Portable Server")
+            } catch {
+                # Fallback: simulate Alt+Tab to switch windows
+                try {
+                    $wshell = New-Object -ComObject wscript.shell
+                    $wshell.SendKeys("%({TAB})")
+                } catch {}
+            }
         } else {
             "WARNING: $batPath not found" | Out-File $traceFile -Append
         }
