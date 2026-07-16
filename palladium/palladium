@@ -102,5 +102,5 @@ case "${1:-}" in
     drive)       shift; show_usb_info ;;
     install-to)  shift; install_to_drive "$@" ;;
     help)        show_help ;;
-    *)           show_banner; main_menu ;;
+    *)           main_menu ;;
 esac

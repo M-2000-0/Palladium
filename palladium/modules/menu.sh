@@ -1,7 +1,44 @@
 #!/bin/bash
+build_menu_block() {
+    local docker_ok=$1 running=$2 drive_label=$3
+    local block=""
+    block+="  ${BOLD}━━━ Quick Start ━━━${NC}\n"
+    block+="  ${BOLD}[1]${NC}  Pre-built stacks\n"
+    block+="  ${BOLD}[2]${NC}  Install a service\n"
+    block+="  ${BOLD}[3]${NC}  Manage services\n"
+    block+="\n"
+    block+="  ${BOLD}━━━ Platform ━━━${NC}\n"
+    block+="  ${BOLD}[4]${NC}  ${MAGENTA}Marketplace${NC}       Browse & install tools\n"
+    block+="  ${BOLD}[5]${NC}  ${MAGENTA}AI Toolkit${NC}         Local LLMs, API connectors\n"
+    block+="  ${BOLD}[6]${NC}  ${MAGENTA}Data Dashboard${NC}     Manage your data\n"
+    block+="  ${BOLD}[7]${NC}  ${MAGENTA}Supabase${NC}           Cloud database\n"
+    block+="\n"
+    block+="  ${BOLD}━━━ System ━━━${NC}\n"
+    block+="  ${BOLD}[8]${NC}  Security & encryption\n"
+    block+="  ${BOLD}[9]${NC}  Network & access\n"
+    block+="  ${BOLD}[10]${NC} Monitoring & limits\n"
+    block+="  ${BOLD}[11]${NC} Updates & versions\n"
+    block+="  ${BOLD}[12]${NC} Notifications & alerts\n"
+    block+="\n"
+    block+="  ${BOLD}━━━ Admin ━━━${NC}\n"
+    block+="  ${BOLD}[13]${NC} Profiles & users\n"
+    block+="  ${BOLD}[14]${NC} Backup & restore\n"
+    block+="  ${BOLD}[15]${NC} Clone & migrate\n"
+    block+="  ${BOLD}[16]${NC} Drives & install\n"
+    block+="  ${BOLD}[17]${NC} Tutorials\n"
+    block+="  ${BOLD}[0]${NC}  Exit\n"
+
+    if $docker_ok; then
+        block+="\n  ${GREEN}Docker: Running${NC}  |  ${CYAN}Services: $running active${NC}$drive_label\n"
+    else
+        block+="\n  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label\n"
+    fi
+
+    echo -e "$block"
+}
+
 main_menu() {
     while true; do
-        show_banner
         local running=0
         local docker_ok=false
         if command -v docker &> /dev/null && docker info &> /dev/null 2>&1; then
@@ -22,47 +59,35 @@ main_menu() {
             fi
         fi
 
-        if $docker_ok; then
-            if [ "$running" -gt 0 ]; then
-                show_server_banner
-            fi
-            echo -e "  ${GREEN}Docker: Running${NC}  |  ${CYAN}Services: $running active${NC}$drive_label"
-        else
-            echo -e "  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label"
-        fi
+        clear 2>/dev/null || true
 
-        if [ -f "$DATA_DIR/supabase.conf" ]; then
-            local project=$(grep "^PROJECT_NAME" "$DATA_DIR/supabase.conf" | cut -d'=' -f2)
-            echo -e "  ${GREEN}Supabase: Connected${NC}  |  ${DIM}$project${NC}"
-        fi
+        # Build left column: banner
+        local left
+        left="\n"
+        left+="${CYAN}${BOLD}██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗${NC}\n"
+        left+="${CYAN}${BOLD}██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║${NC}\n"
+        left+="${CYAN}${BOLD}██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║${NC}\n"
+        left+="${CYAN}${BOLD}██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║${NC}\n"
+        left+="${CYAN}${BOLD}██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║${NC}\n"
+        left+="${CYAN}${BOLD}╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝${NC}\n"
+        left+="${NC}\n"
+        left+="  ${CYAN}${BOLD}Portable Server Manager${NC}\n"
+        left+="  ${DIM}Plug in. Power up. Host anything.${NC}\n"
 
+        # Build right column: menu items
+        local right
+        right=$(build_menu_block "$docker_ok" "$running" "$drive_label")
+
+        # Display side by side using paste + while loop
+        local banner_width=64
+        paste -d $'\x1f' <(echo -e "$left") <(echo -e "$right") | while IFS=$'\x1f' read -r lline rline; do
+            local clean=$(echo -e "$lline" | sed 's/\x1b\[[0-9;]*m//g')
+            local pad=$((banner_width - ${#clean}))
+            [ "$pad" -lt 0 ] && pad=0
+            printf "%s%*s  %s\n" "$lline" "$pad" "" "$rline"
+        done
         echo ""
-        echo -e "  ${BOLD}━━━ Quick Start ━━━${NC}"
-        echo -e "  ${BOLD}[1]${NC}  Pre-built stacks"
-        echo -e "  ${BOLD}[2]${NC}  Install a service"
-        echo -e "  ${BOLD}[3]${NC}  Manage services"
-        echo ""
-        echo -e "  ${BOLD}━━━ Platform ━━━${NC}"
-        echo -e "  ${BOLD}[4]${NC}  ${MAGENTA}Marketplace${NC}       Browse & install tools"
-        echo -e "  ${BOLD}[5]${NC}  ${MAGENTA}AI Toolkit${NC}         Local LLMs, API connectors"
-        echo -e "  ${BOLD}[6]${NC}  ${MAGENTA}Data Dashboard${NC}     Manage your data"
-        echo -e "  ${BOLD}[7]${NC}  ${MAGENTA}Supabase${NC}           Cloud database"
-        echo ""
-        echo -e "  ${BOLD}━━━ System ━━━${NC}"
-        echo -e "  ${BOLD}[8]${NC}  Security & encryption"
-        echo -e "  ${BOLD}[9]${NC}  Network & access"
-        echo -e "  ${BOLD}[10]${NC} Monitoring & limits"
-        echo -e "  ${BOLD}[11]${NC} Updates & versions"
-        echo -e "  ${BOLD}[12]${NC} Notifications & alerts"
-        echo ""
-        echo -e "  ${BOLD}━━━ Admin ━━━${NC}"
-        echo -e "  ${BOLD}[13]${NC} Profiles & users"
-        echo -e "  ${BOLD}[14]${NC} Backup & restore"
-        echo -e "  ${BOLD}[15]${NC} Clone & migrate"
-        echo -e "  ${BOLD}[16]${NC} Drives & install"
-        echo -e "  ${BOLD}[17]${NC} Tutorials"
-        echo -e "  ${BOLD}[0]${NC}  Exit"
-        echo ""
+
         read -p "  Select option: " choice
         case $choice in
             1)  stacks_menu ;;
