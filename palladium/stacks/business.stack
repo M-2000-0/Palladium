@@ -1,0 +1,5 @@
+# desc: Complete business automation setup
+# services: n8n, PostgreSQL, Redis
+n8n|5678
+postgres|5432
+redis|6379

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.palladium.watch</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>USB_PATH="$(df "$0" 2>/dev/null | tail -1 | awk '{print $6}')/palladium" &amp;&amp; exec "$USB_PATH/watch-usb.sh"</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <false/>
+
+    <key>StartInterval</key>
+    <integer>5</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/com.palladium.watch.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/com.palladium.watch.err</string>
+</dict>
+</plist>

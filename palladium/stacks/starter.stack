@@ -1,0 +1,4 @@
+# desc: Just n8n with a database, perfect for getting started
+# services: n8n, PostgreSQL
+n8n|5678
+postgres|5432

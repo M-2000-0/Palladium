@@ -1,0 +1,16 @@
+[AutoRun]
+open=start-palladium.bat
+icon=palladium\palladium.ico
+label=Palladium Portable Server
+action=Start Palladium Server
+
+[AutoRun.AllUsers]
+open=start-palladium.bat
+icon=palladium\palladium.ico
+label=Palladium Portable Server
+action=Start Palladium Server
+
+[Content]
+MusicFiles=no
+PictureFiles=no
+VideoFiles=no

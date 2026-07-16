@@ -1,0 +1,5 @@
+# desc: Web hosting with database and caching
+# services: Nginx, PostgreSQL, Redis
+nginx|80
+postgres|5432
+redis|6379

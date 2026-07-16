@@ -1,0 +1,13 @@
+# desc: Web server / reverse proxy
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "${PORT}:80"
+    volumes:
+      - ./data/html:/usr/share/nginx/html
+      - ./data/nginx.conf:/etc/nginx/nginx.conf:ro

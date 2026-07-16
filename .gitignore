@@ -1,0 +1,27 @@
+# Sensitive data
+.env
+.env.backup
+*.secret
+**/secrets/*.gpg
+
+# Docker data
+data/
+postgres/
+palladium/data/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temp
+tmp/
+temp/

@@ -1,0 +1,106 @@
+#!/bin/bash
+# palladium - Universal Portable Server Manager
+
+set -e
+
+PALLADIUM_HOME="$(cd "$(dirname "$0")" && pwd)"
+MODULES_DIR="$PALLADIUM_HOME/modules"
+SERVICES_DIR="$PALLADIUM_HOME/services"
+STACK_DIR="$PALLADIUM_HOME/stacks"
+MARKETPLACE_DIR="$PALLADIUM_HOME/marketplace"
+DATA_DIR="$PALLADIUM_HOME/data"
+INSTALLED_DIR="$DATA_DIR/installed"
+
+source "$MODULES_DIR/core.sh"
+source "$MODULES_DIR/safety.sh"
+source "$MODULES_DIR/recovery.sh"
+source "$MODULES_DIR/usb.sh"
+source "$MODULES_DIR/services.sh"
+source "$MODULES_DIR/wizard.sh"
+source "$MODULES_DIR/docker.sh"
+source "$MODULES_DIR/stacks.sh"
+source "$MODULES_DIR/backup.sh"
+source "$MODULES_DIR/marketplace.sh"
+source "$MODULES_DIR/supabase.sh"
+source "$MODULES_DIR/dashboard.sh"
+source "$MODULES_DIR/ai.sh"
+source "$MODULES_DIR/data.sh"
+source "$MODULES_DIR/security.sh"
+source "$MODULES_DIR/network.sh"
+source "$MODULES_DIR/monitor.sh"
+source "$MODULES_DIR/updates.sh"
+source "$MODULES_DIR/notify.sh"
+source "$MODULES_DIR/profiles.sh"
+source "$MODULES_DIR/tutorials.sh"
+source "$MODULES_DIR/clone.sh"
+source "$MODULES_DIR/help.sh"
+source "$MODULES_DIR/autorun.sh"
+source "$MODULES_DIR/menu.sh"
+
+mkdir -p "$DATA_DIR" "$INSTALLED_DIR" "$MARKETPLACE_DIR" "$DATA_DIR/workspace/databases" "$DATA_DIR/workspace/exports" "$DATA_DIR/workspace/queries"
+
+# Detect USB mode
+if [ -z "$PALLADIUM_MODE" ]; then
+    if [ -f "$MODULES_DIR/usb.sh" ]; then
+        drives=$(detect_usb_drive 2>/dev/null)
+        if [ -n "$drives" ]; then
+            first_mount=$(echo "$drives" | head -1 | cut -d'|' -f1)
+            if echo "$first_mount" | grep -q "$PALLADIUM_HOME"; then
+                usb_optimize_mode "$first_mount" 2>/dev/null || true
+            fi
+        fi
+    fi
+fi
+
+# First run check
+if [ ! -f "$DATA_DIR/.initialized" ]; then
+    show_banner
+    echo -e "  ${CYAN}Welcome to Palladium!${NC}"
+    echo ""
+    if ! command -v docker &> /dev/null; then
+        echo -e "  Docker is required. Let's install it."
+        echo ""
+        if confirm "  Install Docker now?"; then
+            install_docker
+        fi
+    fi
+    touch "$DATA_DIR/.initialized"
+    echo ""
+    echo -e "${GREEN}  You're all set! Type ${CYAN}palladium${GREEN} to get started.${NC}"
+    echo ""
+    exit 0
+fi
+
+case "${1:-}" in
+    setup)       "$PALLADIUM_HOME/../setup.sh" "$@" ;;
+    setup-autorun) shift; autorun_setup "$@" ;;
+    start)       shift; svc_start "$@" ;;
+    stop)        shift; svc_stop "$@" ;;
+    status)      shift; svc_status "$@" ;;
+    logs)        shift; svc_logs "$@" ;;
+    remove)      shift; svc_remove "$@" ;;
+    list)        svc_list_installed ;;
+    install)     shift; svc_install "$@" ;;
+    launch)      shift; svc_launch "$@" ;;
+    stack)       shift; stack_install "$@" ;;
+    backup)      shift; backup_all ;;
+    restore)     shift; restore_backup ;;
+    cleanup)     cleanup_all ;;
+    marketplace) shift; marketplace_browse ;;
+    supabase)    shift; supabase_menu ;;
+    dashboard)   shift; dashboard_launch ;;
+    ai)          shift; ai_menu ;;
+    data)        shift; data_menu ;;
+    security)    shift; security_menu ;;
+    network)     shift; network_menu ;;
+    monitor)     shift; monitor_menu ;;
+    updates)     shift; updates_menu ;;
+    notify)      shift; notify_menu ;;
+    profile)     shift; profiles_menu ;;
+    tutorials)   shift; tutorials_menu ;;
+    clone)       shift; clone_menu ;;
+    drive)       shift; show_usb_info ;;
+    install-to)  shift; install_to_drive "$@" ;;
+    help)        show_help ;;
+    *)           show_banner; main_menu ;;
+esac
