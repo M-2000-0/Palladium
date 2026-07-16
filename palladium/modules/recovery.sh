@@ -48,7 +48,7 @@ recovery_ask() {
                     fi
                     press_enter
                     ;;
-                2) echo -e "  Run: ${CYAN}sudo service docker start${NC}"; press_enter ;;
+                2) echo -e "  Run: ${SILVER}sudo service docker start${NC}"; press_enter ;;
                 3) return ;;
             esac
             ;;
@@ -84,12 +84,18 @@ recovery_ask() {
                 1) return 0 ;;  # Signal to ask for new port
                 2)
                     echo ""
-                    echo -e "${CYAN}  Programs using port $details:${NC}"
-                    ss -tlnp 2>/dev/null | grep ":$details " || netstat -tlnp 2>/dev/null | grep ":$details " || echo "  Could not determine."
+                    echo -e "${SILVER}  Programs using port $details:${NC}"
+                    if command -v ss &>/dev/null; then
+                        ss -tlnp 2>/dev/null | grep ":$details "
+                    elif command -v netstat &>/dev/null; then
+                        netstat -tlnp 2>/dev/null | grep ":$details "
+                    else
+                        echo "  Could not determine. Try: lsof -i :$details"
+                    fi
                     press_enter
                     ;;
                 3)
-                    echo -e "  Run: ${CYAN}sudo kill \$(lsof -t -i:$details)${NC}"
+                    echo -e "  Run: ${SILVER}sudo kill \$(lsof -t -i:$details)${NC}"
                     press_enter
                     ;;
                 4) return 1 ;;
@@ -149,10 +155,10 @@ recovery_ask() {
                 2) df -h; press_enter ;;
                 3)
                     echo ""
-                    echo -e "${CYAN}  Installed services (by size):${NC}"
+                    echo -e "${SILVER}  Installed services (by size):${NC}"
                     du -sh "$INSTALLED_DIR"/*/ 2>/dev/null | sort -rh | head -10
                     echo ""
-                    echo -e "  Run ${CYAN}palladium remove <name>${NC} to free space."
+                    echo -e "  Run ${SILVER}palladium remove <name>${NC} to free space."
                     press_enter
                     ;;
                 4) return ;;
@@ -214,7 +220,7 @@ recovery_ask() {
                 3)
                     echo ""
                     echo -e "  Please report this at:"
-                    echo -e "  ${CYAN}https://github.com/your-repo/palladium/issues${NC}"
+                    echo -e "  ${SILVER}https://github.com/your-repo/palladium/issues${NC}"
                     echo ""
                     echo -e "  Include this information:"
                     echo -e "    Service: $service"
@@ -242,7 +248,7 @@ check_internet() {
 
 show_manual_docker_install() {
     echo ""
-    echo -e "${CYAN}  Manual Docker Installation:${NC}"
+    echo -e "${SILVER}  Manual Docker Installation:${NC}"
     echo ""
     echo -e "  ${BOLD}Ubuntu/Debian:${NC}"
     echo -e "    sudo apt update"

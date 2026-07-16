@@ -1,7 +1,7 @@
 #!/bin/bash
 show_help() {
     show_banner
-    echo -e "${CYAN}Commands:${NC}"
+    echo -e "${SILVER}Commands:${NC}"
     echo "  palladium                Launch interactive menu"
     echo "  palladium launch <name>  Install + start in one command"
     echo "  palladium stack          Install a pre-built stack"
@@ -19,12 +19,12 @@ show_help() {
     echo "  palladium cleanup        Free up Docker space"
     echo "  palladium setup-autorun  Copy autorun files to USB root"
     echo ""
-    echo -e "${CYAN}Quick Start:${NC}"
+    echo -e "${SILVER}Quick Start:${NC}"
     echo "  palladium                # Pick [1] Quick Start"
     echo "  palladium stack starter  # Service stack with database"
     echo "  palladium launch n8n     # Install + start in one go"
     echo ""
-    echo -e "${CYAN}Examples:${NC}"
+    echo -e "${SILVER}Examples:${NC}"
     echo "  palladium launch ollama       # Install + start Ollama"
     echo "  palladium logs ollama         # View its logs"
     echo "  palladium marketplace         # Browse all 50+ tools"

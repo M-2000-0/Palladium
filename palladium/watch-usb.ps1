@@ -15,6 +15,30 @@ $traceFile = Join-Path $env:TEMP "palladium-watch.log"
 "watch-usb.ps1 started at $(Get-Date)" | Out-File $traceFile -Append
 "Watching for: $markerPath" | Out-File $traceFile -Append
 
+function Stop-PalladiumServices {
+    # Attempt to stop Docker containers managed by Palladium
+    $dockerPaths = @(
+        "C:\Program Files\Docker\Docker\resources\bin\docker.exe",
+        "$env:LOCALAPPDATA\Docker\Programs\Docker Desktop\resources\bin\docker.exe",
+        "$env:ProgramFiles\Docker\Docker\resources\bin\docker.exe"
+    )
+    foreach ($dockerExe in $dockerPaths) {
+        if (Test-Path $dockerExe) {
+            "Stopping Palladium Docker services via $dockerExe" | Out-File $traceFile -Append
+            $installedDir = Join-Path $scriptPath "data\installed"
+            if (Test-Path $installedDir) {
+                Get-ChildItem $installedDir -Directory | ForEach-Object {
+                    $composeFile = Join-Path $_.FullName "docker-compose.yml"
+                    if (Test-Path $composeFile) {
+                        & $dockerExe compose -f $composeFile down 2>&1 | Out-File $traceFile -Append
+                    }
+                }
+            }
+            break
+        }
+    }
+}
+
 while ($true) {
     if (Test-Path $markerPath) {
         "USB detected at $(Get-Date) - launching Palladium" | Out-File $traceFile -Append
@@ -55,7 +79,9 @@ while ($true) {
         while (Test-Path $markerPath) {
             Start-Sleep -Seconds $PollInterval
         }
-        "USB removed at $(Get-Date)" | Out-File $traceFile -Append
+        "USB removed at $(Get-Date) - stopping services" | Out-File $traceFile -Append
+        Stop-PalladiumServices
+        "Cleanup complete." | Out-File $traceFile -Append
     }
     Start-Sleep -Seconds $PollInterval
 }

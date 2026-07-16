@@ -11,7 +11,7 @@ fi
 
 updates_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Updates ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Updates ═══${NC}"
     echo ""
     echo -e "  Palladium version: ${GREEN}v$CURRENT_VERSION${NC}"
     echo ""
@@ -110,7 +110,7 @@ update_all_services() {
 
 update_docker_images() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Update All Docker Images ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Update All Docker Images ═══${NC}"
     echo ""
 
     if ! command -v docker &>/dev/null; then
@@ -130,7 +130,7 @@ update_docker_images() {
     echo -e "${YELLOW}Pulling latest versions...${NC}"
     echo ""
     echo "$images" | while read -r image; do
-        echo -e "  Pulling ${CYAN}$image${NC}..."
+        echo -e "  Pulling ${SILVER}$image${NC}..."
         docker pull "$image" 2>/dev/null && echo -e "  ${GREEN}  Done${NC}" || echo -e "  ${RED}  Failed${NC}"
         echo ""
     done
@@ -141,21 +141,21 @@ update_docker_images() {
 
 version_info() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Version Information ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Version Information ═══${NC}"
     echo ""
     echo -e "  Palladium version: ${GREEN}$CURRENT_VERSION${NC}"
     echo ""
 
     local git_commit=$(git log --oneline -1 2>/dev/null)
     if [ -n "$git_commit" ]; then
-        echo -e "  Git commit: ${CYAN}$git_commit${NC}"
+        echo -e "  Git commit: ${SILVER}$git_commit${NC}"
     else
         echo -e "  Git commit: ${DIM}Not available${NC}"
     fi
 
     if command -v docker &>/dev/null; then
         local docker_ver=$(docker --version 2>/dev/null)
-        echo -e "  Docker: ${CYAN}$docker_ver${NC}"
+        echo -e "  Docker: ${SILVER}$docker_ver${NC}"
     else
         echo -e "  Docker: ${RED}Not installed${NC}"
     fi

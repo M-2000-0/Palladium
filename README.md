@@ -57,6 +57,22 @@ palladium dashboard        # live server overview
 - **Monitoring** — CPU/RAM/Disk live monitor, service health, alerting (Telegram/email)
 - **USB Autorun** — Plug-and-play: insert USB, Palladium starts automatically
 
+## Why USB?
+
+Palladium is designed to live on a USB stick or portable SSD. Here's why that matters:
+
+**Portability** — Your entire server stack fits in your pocket. Plug into any Windows/Mac/Linux machine, run one command, and n8n + Postgres + Ollama are ready. Move between machines without reinstalling or reconfiguring.
+
+**No cloud lock-in** — Your data, credentials, and config travel with the physical drive. No subscription, no vendor dependency, no data leaving your control.
+
+**Disaster-proof** — Laptop dies or gets stolen? Plug your USB into any other computer and resume working. No backup restore needed — the drive *is* the backup.
+
+**Ephemeral hosts** — Use library computers, hotel PCs, or a friend's laptop. Palladium runs entirely from the USB and leaves no trace when you unplug.
+
+**Air-gap capable** — After the initial install, everything runs offline. No internet required for daily operation. Great for demos, travel, or secure environments.
+
+**Works without USB too** — Run `install.sh` directly on your machine and Palladium deploys to `~/palladium`. You lose portability, but everything else works the same.
+
 ## Requirements
 
 - **Any OS:** Windows (Git Bash), macOS, Linux, ARM

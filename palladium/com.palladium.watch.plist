@@ -8,18 +8,14 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>-c</string>
-        <string>USB_PATH="$(df "$0" 2>/dev/null | tail -1 | awk '{print $6}')/palladium" &amp;&amp; exec "$USB_PATH/watch-usb.sh"</string>
+        <string>/PATH/TO/palladium/watch-usb.sh</string>
     </array>
 
     <key>RunAtLoad</key>
     <true/>
 
     <key>KeepAlive</key>
-    <false/>
-
-    <key>StartInterval</key>
-    <integer>5</integer>
+    <true/>
 
     <key>StandardOutPath</key>
     <string>/tmp/com.palladium.watch.log</string>

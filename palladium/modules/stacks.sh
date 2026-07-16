@@ -12,7 +12,7 @@ stack_install() {
     local desc=$(grep "^# desc:" "$stack_file" | head -1 | sed 's/^# desc: //')
     local services=$(grep "^# services:" "$stack_file" | head -1 | sed 's/^# services: //')
 
-    echo -e "${CYAN}${BOLD}  ═══ Installing Stack: $stack ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Installing Stack: $stack ═══${NC}"
     echo ""
     echo -e "  ${DIM}$desc${NC}"
     echo -e "  ${DIM}Services: $services${NC}"
@@ -26,7 +26,7 @@ stack_install() {
     stack_name=$(prompt_value "  Stack name" "$stack")
 
     echo ""
-    echo -e "${CYAN}  This will install:${NC}"
+    echo -e "${SILVER}  This will install:${NC}"
 
     local svc_list=()
     while IFS= read -r line; do
@@ -58,7 +58,7 @@ stack_install() {
         local instance="${stack_name}-${svc_name}"
 
         ((installed_count++))
-        echo -e "${CYAN}  [$installed_count/$total] Installing $svc_name...${NC}"
+        echo -e "${SILVER}  [$installed_count/$total] Installing $svc_name...${NC}"
 
         if [ ! -f "$SERVICES_DIR/$svc_name.yml" ]; then
             echo -e "${RED}    Template '$svc_name' not found. Skipping.${NC}"
@@ -129,7 +129,7 @@ EOF
     echo -e "${GREEN}  ═══════════════════════════════════════${NC}"
     echo ""
 
-    echo -e "${CYAN}  Your services:${NC}"
+    echo -e "${SILVER}  Your services:${NC}"
     for entry in "${svc_list[@]}"; do
         local svc_name=$(echo "$entry" | cut -d'|' -f1)
         local svc_port=$(echo "$entry" | cut -d'|' -f2)
@@ -160,7 +160,7 @@ EOF
 
         if command -v qrencode &>/dev/null; then
             echo ""
-            echo -e "${CYAN}  Scan for mobile access:${NC}"
+            echo -e "${SILVER}  Scan for mobile access:${NC}"
             qrencode -t ANSIUTF8 "$url" 2>/dev/null | sed 's/^/  /'
         fi
     fi

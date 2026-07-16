@@ -1,6 +1,6 @@
 #!/bin/bash
 # palladium - Universal Portable Server Manager
-set -e
+# Note: set -e removed for interactive CLI resilience
 
 PALLADIUM_VERSION="$(cat "$(cd "$(dirname "$0")" && pwd)/../VERSION" 2>/dev/null || echo "0.0.0")"
 PALLADIUM_HOME="$(cd "$(dirname "$0")" && pwd)"
@@ -11,19 +11,24 @@ MARKETPLACE_DIR="$PALLADIUM_HOME/marketplace"
 DATA_DIR="$PALLADIUM_HOME/data"
 INSTALLED_DIR="$DATA_DIR/installed"
 
-# Process flags before anything else
-for arg in "$@"; do
-    case "$arg" in
-        --version|-v) echo "Palladium v$PALLADIUM_VERSION"; exit 0 ;;
-        --debug|-d) set -x ;;
-    esac
-done
+# Trap for cleanup on exit/interrupt
+cleanup_on_exit() {
+    echo -e "\n${YELLOW}Shutting down Palladium services...${NC}"
+    for svc_dir in "$INSTALLED_DIR"/*/; do
+        [ -d "$svc_dir" ] || continue
+        (cd "$svc_dir" && docker compose down 2>/dev/null || docker-compose down 2>/dev/null)
+    done
+    echo -e "${GREEN}Services stopped. Goodbye!${NC}"
+}
+trap cleanup_on_exit SIGINT SIGTERM EXIT
 
+# Single-pass argument parsing
 log_file=""
 debug_mode=false
 for arg in "$@"; do
     case "$arg" in
-        --debug|-d) debug_mode=true ;;
+        --version|-v) echo "Palladium v$PALLADIUM_VERSION"; exit 0 ;;
+        --debug|-d) debug_mode=true; set -x ;;
         --log-file=*) log_file="${arg#*=}" ;;
     esac
 done
@@ -133,7 +138,6 @@ case "${1:-}" in
     drive)       shift; show_usb_info ;;
     install-to)  shift; install_to_drive "$@" ;;
     install-tools|tools) install_tools ;;
-    dashboard)   server_dashboard ;;
     help)        show_help ;;
     *)           main_menu ;;
 esac

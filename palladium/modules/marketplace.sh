@@ -7,7 +7,7 @@ mkdir -p "$MARKETPLACE_DIR" "$PLUGINS_DIR"
 
 marketplace_browse() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Marketplace ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Marketplace ═══${NC}"
     echo ""
     echo -e "  ${DIM}Browse and install tools, AI services, and integrations.${NC}"
     echo ""
@@ -41,7 +41,7 @@ marketplace_browse() {
 marketplace_category() {
     local category="$1"
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ ${category} Tools ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ ${category} Tools ═══${NC}"
     echo ""
 
     local tools=()
@@ -91,7 +91,7 @@ marketplace_install_tool() {
     local port="$3"
 
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Installing: $name ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Installing: $name ═══${NC}"
     echo ""
 
     local desc=$(grep "^desc:" "$MARKETPLACE_DIR/$name.tool" 2>/dev/null | head -1 | sed 's/^desc: //')
@@ -113,7 +113,7 @@ marketplace_install_tool() {
     # Gather variables
     local env_vars=()
     if [ -n "$vars" ]; then
-        echo -e "${CYAN}  Configuration:${NC}"
+        echo -e "${SILVER}  Configuration:${NC}"
         IFS=',' read -ra VAR_ARRAY <<< "$vars"
         for var in "${VAR_ARRAY[@]}"; do
             local var_name=$(echo "$var" | cut -d'=' -f1)
@@ -189,7 +189,7 @@ EOF
 
     if command -v qrencode &>/dev/null; then
         echo ""
-        echo -e "${CYAN}  Scan for mobile:${NC}"
+        echo -e "${SILVER}  Scan for mobile:${NC}"
         qrencode -t ANSIUTF8 "$url" 2>/dev/null | sed 's/^/  /'
     fi
 
@@ -199,7 +199,7 @@ EOF
 
 marketplace_custom_install() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Custom Install ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Custom Install ═══${NC}"
     echo ""
 
     check_docker_available || { press_enter; return; }
@@ -297,7 +297,7 @@ EOF
 
 marketplace_search() {
     local query="$1"
-    echo -e "${CYAN}Searching for: $query${NC}"
+    echo -e "${SILVER}Searching for: $query${NC}"
     echo ""
     for tool_file in "$MARKETPLACE_DIR"/*.tool; do
         [ -f "$tool_file" ] || continue

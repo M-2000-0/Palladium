@@ -2,7 +2,7 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 BOLD='\033[1m'
@@ -11,7 +11,7 @@ NC='\033[0m'
 
 show_banner() {
     echo ""
-    echo -e "${CYAN}${BOLD}"
+    echo -e "${SILVER}${BOLD}"
     cat << 'EOF'
 ██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗
 ██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║
@@ -21,14 +21,14 @@ show_banner() {
 ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝
 EOF
     echo -e "${NC}"
-    echo -e "  ${CYAN}${BOLD}Portable Server Manager${NC}"
+    echo -e "  ${SILVER}${BOLD}Portable Server Manager${NC}"
     echo -e "  ${DIM}Plug in. Power up. Host anything.${NC}"
     echo ""
 }
 
 show_server_banner() {
     echo ""
-    echo -e "${GREEN}${BOLD}"
+    echo -e "${SILVER}${BOLD}"
     echo "  ███████╗ ███████╗ ██████╗  ██╗   ██╗ ███████╗ ██████╗ "
     echo "  ██╔════╝ ██╔════╝ ██╔══██╗ ██║   ██║ ██╔════╝ ██╔══██╗"
     echo "  ███████╗ █████╗   ██████╔╝ ██║   ██║ █████╗   ██████╔╝"
@@ -40,7 +40,7 @@ show_server_banner() {
 
 show_help() {
     show_banner
-    echo -e "${CYAN}Usage:${NC}"
+    echo -e "${SILVER}Usage:${NC}"
     echo "  palladium              Launch interactive menu"
     echo "  palladium install      Install a service"
     echo "  palladium start <svc>  Start a service"
@@ -123,4 +123,52 @@ ensure_docker_in_path() {
             export PATH="$docker_dir:$PATH"
         fi
     fi
+}
+
+# Input validation functions
+validate_port() {
+    local port="$1"
+    [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]
+}
+
+validate_instance_name() {
+    local name="$1"
+    [[ "$name" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,62}$ ]]
+}
+
+validate_password() {
+    local pwd="$1"
+    [ ${#pwd} -ge 8 ] || return 1
+    # At least one letter and one number
+    [[ "$pwd" =~ [A-Za-z] ]] && [[ "$pwd" =~ [0-9] ]]
+}
+
+prompt_port() {
+    local prompt="$1"
+    local default="${2:-}"
+    local port
+    while true; do
+        port=$(prompt_value "$prompt" "$default")
+        if validate_port "$port"; then
+            echo "$port"
+            return 0
+        else
+            echo -e "${RED}  Invalid port. Must be 1-65535.${NC}"
+        fi
+    done
+}
+
+prompt_instance_name() {
+    local prompt="$1"
+    local default="${2:-}"
+    local name
+    while true; do
+        name=$(prompt_value "$prompt" "$default")
+        if validate_instance_name "$name"; then
+            echo "$name"
+            return 0
+        else
+            echo -e "${RED}  Invalid name. Use alphanumeric, hyphen, underscore (1-63 chars).${NC}"
+        fi
+    done
 }

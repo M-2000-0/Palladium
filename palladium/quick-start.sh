@@ -9,7 +9,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 NC='\033[0m'
 BOLD='\033[1m'
 
@@ -124,7 +124,7 @@ alias_cmd() {
 # Simple AI setup
 quick_ai() {
     clear
-    echo -e "${CYAN}${BOLD}🤖 Installing Local AI (Ollama)...${NC}"
+    echo -e "${SILVER}${BOLD}🤖 Installing Local AI (Ollama)...${NC}"
     echo ""
     echo "📦 Installing Ollama with 7B model (Llama 2)..."
     bash $SCRIPT_DIR/palladium ai 2>&1 | head -50
@@ -140,7 +140,7 @@ quick_ai() {
 # Cloud AI API setup
 quick_ai_api() {
     clear
-    echo -e "${CYAN}${BOLD}☁️  Setup Cloud AI API Keys${NC}"
+    echo -e "${SILVER}${BOLD}☁️  Setup Cloud AI API Keys${NC}"
     echo ""
     echo "Choose your AI provider:"
     echo ""
@@ -182,7 +182,7 @@ quick_ai_api() {
 # Quick RAG setup
 quick_rag() {
     clear
-    echo -e "${CYAN}${BOLD}🔍 Setting up RAG Pipeline${NC}"
+    echo -e "${SILVER}${BOLD}🔍 Setting up RAG Pipeline${NC}"
     echo ""
     echo "Installing ChromaDB + Ollama..."
     bash $SCRIPT_DIR/palladium ai 2>&1 | tail -20
@@ -192,7 +192,7 @@ quick_rag() {
 # Quick Stripe setup
 quick_stripe() {
     clear
-    echo -e "${CYAN}${BOLD}💳 Setup Stripe Payments${NC}"
+    echo -e "${SILVER}${BOLD}💳 Setup Stripe Payments${NC}"
     echo ""
     echo "📦 Installing Stripe API service..."
     read -p "Enter your Stripe secret key: " stripe_key
@@ -209,7 +209,7 @@ quick_stripe() {
 # Quick email setup
 quick_email() {
     clear
-    echo -e "${CYAN}${BOLD}📧 Setup Email Service${NC}"
+    echo -e "${SILVER}${BOLD}📧 Setup Email Service${NC}"
     echo ""
     echo "📦 Installing SendGrid service..."
     echo "🚧 Coming soon - Set up SendGrid API key"
@@ -218,7 +218,7 @@ quick_email() {
 # Quick analytics setup
 quick_analytics() {
     clear
-    echo -e "${CYAN}${BOLD}📊 Setup Analytics${NC}"
+    echo -e "${SILVER}${BOLD}📊 Setup Analytics${NC}"
     echo ""
     echo "📦 Installing analytics stack..."
     echo "🚧 Coming soon - PostHog analytics"
@@ -227,14 +227,14 @@ quick_analytics() {
 # Quick Ollama setup
 quick_install_ollama() {
     clear
-    echo -e "${CYAN}${BOLD}🐳 Installing Ollama${NC}"
+    echo -e "${SILVER}${BOLD}🐳 Installing Ollama${NC}"
     quick_ai
 }
 
 # Quick n8n setup
 quick_install_n8n() {
     clear
-    echo -e "${CYAN}${BOLD}🔄 Installing n8n with PostgreSQL${NC}"
+    echo -e "${SILVER}${BOLD}🔄 Installing n8n with PostgreSQL${NC}"
     echo ""
     echo "📦 Installing complete n8n stack..."
     echo "🎯 Next steps:
@@ -245,7 +245,7 @@ quick_install_n8n() {
 # Quick monitoring setup
 quick_install_monitoring() {
     clear
-    echo -e "${CYAN}${BOLD}📊 Installing Monitoring${NC}"
+    echo -e "${SILVER}${BOLD}📊 Installing Monitoring${NC}"
     echo ""
     echo "📦 Installing Uptime Kuma...
   • Port: 3001
@@ -255,7 +255,7 @@ quick_install_monitoring() {
 # Quick postgres setup
 quick_install_postgres() {
     clear
-    echo -e "${CYAN}${BOLD}🗄️  Installing PostgreSQL${NC}"
+    echo -e "${SILVER}${BOLD}🗄️  Installing PostgreSQL${NC}"
     echo ""
     echo "📦 Installing PostgreSQL database...
   • Port: 5432
@@ -265,7 +265,7 @@ quick_install_postgres() {
 # Quick redis setup
 quick_install_redis() {
     clear
-    echo -e "${CYAN}${BOLD}💾 Installing Redis${NC}"
+    echo -e "${SILVER}${BOLD}💾 Installing Redis${NC}"
     echo ""
     echo "📦 Installing Redis cache...
   • Port: 6379
@@ -275,7 +275,7 @@ quick_install_redis() {
 # Quick install all stack
 quick_install_all_stack() {
     clear
-    echo -e "${CYAN}${BOLD}🚀 Installing Complete Stack${NC}"
+    echo -e "${SILVER}${BOLD}🚀 Installing Complete Stack${NC}"
     echo ""
     echo "📦 Installing: n8n + PostgreSQL + Ollama + Monitoring"
     echo ""
@@ -308,7 +308,7 @@ if [ $# -eq 0 ]; then
     echo -e "   $ ${BOLD}palladium quick n8n$NC               # Install workflow automation"
     echo -e "   $ ${BOLD}palladium quick postgres$NC           # Install database"
     echo ""
-    echo -e "${CYAN}Try: $ ${BOLD}palladium quick ai$NC${NC}"
+    echo -e "${SILVER}Try: $ ${BOLD}palladium quick ai$NC${NC}"
     read -p "> Press Enter to continue..." dummy
     clear
     quick_ai

@@ -3,7 +3,8 @@ import os, re, sys, glob, subprocess
 from pathlib import Path
 from typing import List, Tuple
 
-PROJECT = Path(r"C:\Users\HP\OneDrive\Desktop\Server project\palladium")
+# Detect project root dynamically
+PROJECT = Path(__file__).resolve().parent.parent
 
 # Detect bash availability
 _BASH = None

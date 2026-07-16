@@ -48,7 +48,7 @@ if [ "$(uname)" = "Darwin" ]; then
     echo "  Installing macOS launchd agent..."
     mkdir -p ~/Library/LaunchAgents
 
-    cp "$SCRIPT_DIR/com.palladium.watch.plist" ~/Library/LaunchAgents/
+    sed "s|/PATH/TO/palladium|$USB_ROOT/palladium|g" "$SCRIPT_DIR/com.palladium.watch.plist" > ~/Library/LaunchAgents/com.palladium.watch.plist
     launchctl load ~/Library/LaunchAgents/com.palladium.watch.plist
 
     echo ""

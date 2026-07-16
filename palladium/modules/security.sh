@@ -3,9 +3,64 @@
 
 SECRETS_FILE="$DATA_DIR/.secrets"
 
+# Secure temp file handling
+make_secure_temp() {
+    local tmp
+    tmp=$(mktemp "${TMPDIR:-/tmp}/palladium_secrets.XXXXXX")
+    chmod 600 "$tmp"
+    echo "$tmp"
+}
+
+secure_shred() {
+    local file="$1"
+    [ -f "$file" ] || return 0
+    if command -v shred &>/dev/null; then
+        shred -u "$file" 2>/dev/null
+    else
+        dd if=/dev/urandom of="$file" bs=1k count=1 conv=notrunc 2>/dev/null
+        rm -f "$file"
+    fi
+}
+
+# Portable port check - works on Linux, macOS, Windows (Git Bash/WSL)
+port_in_use() {
+    local port="$1"
+    local host="${2:-0.0.0.0}"
+    timeout 1 bash -c "echo >/dev/tcp/${host}/${port}" 2>/dev/null
+}
+
+# Check if port is listening on all interfaces (0.0.0.0)
+port_exposed() {
+    local port="$1"
+    # Try ss first (Linux), then netstat (Linux/BSD), then /dev/tcp fallback
+    if command -v ss &>/dev/null; then
+        ss -tln 2>/dev/null | grep -q ":$port "
+    elif command -v netstat &>/dev/null; then
+        netstat -tln 2>/dev/null | grep -q ":$port "
+    else
+        port_in_use "$port" "0.0.0.0"
+    fi
+}
+
+# Encrypt using master password from stdin
+encrypt_secrets() {
+    local master="$1"
+    local infile="$2"
+    local outfile="$3"
+    printf '%s' "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass stdin -in "$infile" -out "$outfile" 2>/dev/null
+}
+
+# Decrypt using master password from stdin
+decrypt_secrets() {
+    local master="$1"
+    local infile="$2"
+    local outfile="$3"
+    printf '%s' "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -pass stdin -in "$infile" -out "$outfile" 2>/dev/null
+}
+
 security_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Security ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Security ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Secrets Manager${NC}     Store API keys, passwords securely"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Password audit${NC}      Check for weak/default passwords"
@@ -27,7 +82,7 @@ security_menu() {
 
 secrets_manager() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Secrets Manager ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Secrets Manager ═══${NC}"
     echo ""
     echo -e "  ${DIM}Store API keys, passwords, and tokens securely.${NC}"
     echo -e "  ${DIM}Encrypted with your master password.${NC}"
@@ -38,11 +93,10 @@ secrets_manager() {
         echo ""
         local master=$(prompt_password "  Create master password")
         [ -z "$master" ] && return
-        echo "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -out "$SECRETS_FILE" 2>/dev/null <<< ""
-        echo "# Palladium Secrets Vault" > /tmp/secrets_plain
-        echo "# Master: $master" >> /tmp/secrets_plain
-        cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
-        rm -f /tmp/secrets_plain
+    local tmp=$(make_secure_temp)
+    echo "# Palladium Secrets Vault" > "$tmp"
+    encrypt_secrets "$master" "$tmp" "$SECRETS_FILE"
+    secure_shred "$tmp"
         chmod 600 "$SECRETS_FILE"
         echo -e "${GREEN}Vault created!${NC}"
     fi
@@ -70,28 +124,34 @@ secrets_add() {
     local value=$(prompt_password "  Secret value")
     [ -z "$key" ] || [ -z "$value" ] && return
 
-    # Decrypt, add, re-encrypt
-    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null > /tmp/secrets_plain
-    echo "$key=$value" >> /tmp/secrets_plain
-    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
-    rm -f /tmp/secrets_plain
+    local tmp=$(make_secure_temp)
+    decrypt_secrets "$master" "$SECRETS_FILE" "$tmp" || { secure_shred "$tmp"; return; }
+    echo "$key=$value" >> "$tmp"
+    encrypt_secrets "$master" "$tmp" "$SECRETS_FILE"
+    secure_shred "$tmp"
     echo -e "${GREEN}Secret added: $key${NC}"
     press_enter
 }
 
 secrets_list() {
     local master=$(prompt_password "  Master password")
-    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^#" | while read -r line; do
+    local tmp=$(make_secure_temp)
+    decrypt_secrets "$master" "$SECRETS_FILE" "$tmp" || { secure_shred "$tmp"; return; }
+    grep -v "^#" "$tmp" 2>/dev/null | while IFS= read -r line; do
         local key=$(echo "$line" | cut -d= -f1)
         echo -e "  ${GREEN}$key${NC}"
     done
+    secure_shred "$tmp"
     press_enter
 }
 
 secrets_get() {
     local master=$(prompt_password "  Master password")
     local key=$(prompt_value "  Secret name")
-    local value=$(openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep "^$key=" | cut -d= -f2-)
+    local tmp=$(make_secure_temp)
+    decrypt_secrets "$master" "$SECRETS_FILE" "$tmp" || { secure_shred "$tmp"; return; }
+    local value=$(grep "^$key=" "$tmp" 2>/dev/null | cut -d= -f2-)
+    secure_shred "$tmp"
     if [ -n "$value" ]; then
         echo -e "  ${GREEN}$key${NC} = ${DIM}$value${NC}"
     else
@@ -103,22 +163,25 @@ secrets_get() {
 secrets_delete() {
     local master=$(prompt_password "  Master password")
     local key=$(prompt_value "  Secret name to delete")
-    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^$key=" > /tmp/secrets_plain
-    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
-    rm -f /tmp/secrets_plain
+    local tmp=$(make_secure_temp)
+    decrypt_secrets "$master" "$SECRETS_FILE" "$tmp" || { secure_shred "$tmp"; return; }
+    grep -v "^$key=" "$tmp" > "${tmp}.new" 2>/dev/null || true
+    encrypt_secrets "$master" "${tmp}.new" "$SECRETS_FILE"
+    secure_shred "$tmp"
+    secure_shred "${tmp}.new"
     echo -e "${GREEN}Secret deleted.${NC}"
     press_enter
 }
 
 password_audit() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Password Audit ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Password Audit ═══${NC}"
     echo ""
 
     local issues=0
 
     # Check .env files for default passwords
-    echo -e "${CYAN}Checking for default/weak passwords...${NC}"
+    echo -e "${SILVER}Checking for default/weak passwords...${NC}"
     echo ""
 
     for svc_dir in "$INSTALLED_DIR"/*/; do
@@ -142,7 +205,7 @@ password_audit() {
 
     # Check for open ports without auth
     echo ""
-    echo -e "${CYAN}Checking exposed ports...${NC}"
+    echo -e "${SILVER}Checking exposed ports...${NC}"
     for svc_dir in "$INSTALLED_DIR"/*/; do
         [ -d "$svc_dir" ] || continue
         local name=$(basename "$svc_dir")
@@ -150,7 +213,7 @@ password_audit() {
         local port=$(cat "$svc_dir/.port")
 
         # Check if port is accessible from all interfaces
-        if ss -tlnp 2>/dev/null | grep -q ":$port.*0.0.0.0" || netstat -tlnp 2>/dev/null | grep -q ":$port.*0.0.0.0"; then
+        if port_exposed "$port"; then
             echo -e "  ${YELLOW}  $name${NC} (port $port) - accessible from network"
         fi
     done
@@ -166,7 +229,7 @@ password_audit() {
 
 firewall_setup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Firewall ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Firewall ═══${NC}"
     echo ""
 
     if ! command -v ufw &>/dev/null; then
@@ -178,7 +241,7 @@ firewall_setup() {
         fi
     fi
 
-    echo -e "${CYAN}Current firewall status:${NC}"
+    echo -e "${SILVER}Current firewall status:${NC}"
     sudo ufw status 2>/dev/null
     echo ""
 
@@ -201,7 +264,7 @@ firewall_setup() {
 
 https_setup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ HTTPS Setup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ HTTPS Setup ═══${NC}"
     echo ""
     echo -e "  ${DIM}Generate self-signed SSL certificates for local use.${NC}"
     echo ""
@@ -232,14 +295,14 @@ https_setup() {
 
 security_scan() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Security Scan ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Security Scan ═══${NC}"
     echo ""
 
     local score=100
     local issues=()
 
     # Check 1: Docker running as root
-    echo -e "${CYAN}[1/6]${NC} Checking Docker permissions..."
+    echo -e "${SILVER}[1/6]${NC} Checking Docker permissions..."
     if groups | grep -q docker; then
         echo -e "  ${GREEN}  User in docker group${NC}"
     else
@@ -248,7 +311,7 @@ security_scan() {
     fi
 
     # Check 2: Default passwords
-    echo -e "${CYAN}[2/6]${NC} Checking default passwords..."
+    echo -e "${SILVER}[2/6]${NC} Checking default passwords..."
     local default_pwds=0
     for svc_dir in "$INSTALLED_DIR"/*/; do
         [ -d "$svc_dir" ] || continue
@@ -262,20 +325,20 @@ security_scan() {
     fi
 
     # Check 3: Open ports
-    echo -e "${CYAN}[3/6]${NC} Checking exposed ports..."
+    echo -e "${SILVER}[3/6]${NC} Checking exposed ports..."
     local open_count=0
     for svc_dir in "$INSTALLED_DIR"/*/; do
         [ -d "$svc_dir" ] || continue
         [ -f "$svc_dir/.port" ] || continue
         local port=$(cat "$svc_dir/.port")
-        if ss -tlnp 2>/dev/null | grep -q ":$port.*0.0.0.0"; then
+        if port_exposed "$port"; then
             ((open_count++))
         fi
     done
     echo -e "  ${YELLOW}  $open_count service(s) accessible from network${NC}"
 
     # Check 4: Firewall
-    echo -e "${CYAN}[4/6]${NC} Checking firewall..."
+    echo -e "${SILVER}[4/6]${NC} Checking firewall..."
     if command -v ufw &>/dev/null && sudo ufw status 2>/dev/null | grep -q "active"; then
         echo -e "  ${GREEN}  Firewall active${NC}"
     else
@@ -284,15 +347,15 @@ security_scan() {
     fi
 
     # Check 5: Disk encryption
-    echo -e "${CYAN}[5/6]${NC} Checking encryption..."
+    echo -e "${SILVER}[5/6]${NC} Checking encryption..."
     echo -e "  ${DIM}  Manual check required for disk encryption${NC}"
 
     # Check 6: Updates
-    echo -e "${CYAN}[6/6]${NC} Checking for updates..."
+    echo -e "${SILVER}[6/6]${NC} Checking for updates..."
     echo -e "  ${DIM}  Run: palladium update${NC}"
 
     echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${SILVER}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     if [ $score -ge 80 ]; then
         echo -e "  ${GREEN}Security Score: $score/100 - Good${NC}"
     elif [ $score -ge 60 ]; then
@@ -300,13 +363,13 @@ security_scan() {
     else
         echo -e "  ${RED}Security Score: $score/100 - Needs attention${NC}"
     fi
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${SILVER}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     press_enter
 }
 
 secrets_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Secrets Menu ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Secrets Menu ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Add secret${NC}"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}List secrets${NC}"
@@ -327,7 +390,7 @@ secrets_menu() {
 
 generate_https_certs() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Generate HTTPS Certs ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Generate HTTPS Certs ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Self-signed certificate${NC} (openssl)"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Let's Encrypt${NC} (certbot)"

@@ -4,20 +4,32 @@ version: "3.8"
 services:
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
-    container_name: n8n
+    container_name: ${INSTANCE_NAME:-n8n}
     restart: unless-stopped
     ports:
       - "${PORT}:5678"
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}
-      - N8N_HOST=localhost
+      # n8n 1.0+ uses owner account setup in the browser (not basic auth)
+      - N8N_HOST=${N8N_HOST:-localhost}
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
       - NODE_ENV=production
       - GENERIC_TIMEZONE=${TZ:-UTC}
       - TZ=${TZ:-UTC}
+      # API keys — set these in your .env or use the API Keys menu
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - COHERE_API_KEY=${COHERE_API_KEY:-}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY:-}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
+      - PINECONE_API_KEY=${PINECONE_API_KEY:-}
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
     volumes:
       - ./data:/home/node/.n8n
     extra_hosts:
@@ -25,7 +37,7 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    container_name: n8n-postgres
+    container_name: ${INSTANCE_NAME:-n8n}-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=n8n

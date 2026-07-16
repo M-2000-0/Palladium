@@ -6,7 +6,7 @@ DASHBOARD_DIR="$PALLADIUM_HOME/dashboard"
 
 dashboard_launch() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Data Dashboard ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Data Dashboard ═══${NC}"
     echo ""
 
     # Check if already running
@@ -133,7 +133,7 @@ EOF
 
         if command -v qrencode &>/dev/null; then
             echo ""
-            echo -e "${CYAN}  Scan for mobile:${NC}"
+            echo -e "${SILVER}  Scan for mobile:${NC}"
             qrencode -t ANSIUTF8 "$url" 2>/dev/null | sed 's/^/  /'
         fi
     else

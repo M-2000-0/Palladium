@@ -6,7 +6,7 @@ mkdir -p "$DATA_WORKSPACE/databases" "$DATA_WORKSPACE/exports" "$DATA_WORKSPACE/
 
 data_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Data Analysis Workspace ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Data Analysis Workspace ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Create database${NC}        New SQL database in seconds"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Query database${NC}         Run SQL queries"
@@ -34,7 +34,7 @@ data_menu() {
 
 data_create_db() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Create Database ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Create Database ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}SQLite${NC}        Fast, no setup, file-based"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}PostgreSQL${NC}    Full-featured, production-ready"
@@ -237,7 +237,7 @@ data_create_supabase() {
 
 data_query() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Query Database ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Query Database ═══${NC}"
     echo ""
 
     # List available databases
@@ -280,7 +280,7 @@ data_query() {
 data_run_query() {
     local db_ref="$1"
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ SQL Query ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ SQL Query ═══${NC}"
     echo ""
 
     # Get connection info
@@ -313,7 +313,7 @@ data_run_query() {
     [ -z "$query" ] && { echo -e "${YELLOW}No query entered.${NC}"; press_enter; return; }
 
     echo ""
-    echo -e "${CYAN}Running:${NC}"
+    echo -e "${SILVER}Running:${NC}"
     echo -e "${DIM}$query${NC}"
     echo ""
 
@@ -457,7 +457,7 @@ data_ai_about_result() {
 
 data_nl2sql() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Natural Language → SQL ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Natural Language → SQL ═══${NC}"
     echo ""
     echo -e "  ${DIM}Describe what you want in plain English.${NC}"
     echo -e "  ${DIM}AI will convert it to SQL for you.${NC}"
@@ -600,7 +600,7 @@ data_save_query() {
 
 data_saved_queries() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Saved Queries ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Saved Queries ═══${NC}"
     echo ""
 
     local queries=()
@@ -628,7 +628,7 @@ data_saved_queries() {
     if [ "$choice" -ge 1 ] && [ "$choice" -le "${#queries[@]}" ]; then
         local selected="${queries[$((choice-1))]}"
         echo ""
-        echo -e "${CYAN}Query:${NC}"
+        echo -e "${SILVER}Query:${NC}"
         cat "$selected"
         echo ""
         echo -e "  ${BOLD}[1]${NC}  Run this query"
@@ -645,7 +645,7 @@ data_saved_queries() {
 
 data_import() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Import Data ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Import Data ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}CSV file${NC}"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}JSON file${NC}"
@@ -808,7 +808,7 @@ data_import_sql() {
 
 data_export() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Export Data ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Export Data ═══${NC}"
     echo ""
 
     # List databases
@@ -872,7 +872,7 @@ data_export_result() {
 
 data_visualize() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Data Visualization ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Data Visualization ═══${NC}"
     echo ""
     echo -e "  ${DIM}Generate charts from your data.${NC}"
     echo ""
@@ -977,7 +977,7 @@ HTMLEOF
 
 data_ai_analysis() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI Data Analysis ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI Data Analysis ═══${NC}"
     echo ""
     echo -e "  ${DIM}Ask questions about your data in plain English.${NC}"
     echo ""
@@ -998,7 +998,7 @@ data_ai_analysis() {
     fi
 
     # Show recent analysis results
-    echo -e "${CYAN}Recent analyses:${NC}"
+    echo -e "${SILVER}Recent analyses:${NC}"
     for meta_file in "$DATA_WORKSPACE/databases"/*.meta; do
         [ -f "$meta_file" ] || continue
         local db_type=$(grep "^type=" "$meta_file" | cut -d= -f2)

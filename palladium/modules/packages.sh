@@ -54,7 +54,7 @@ palladium_install() {
     local os
     os=$(detect_os)
 
-    echo -e "${CYAN}  Installing $name...${NC}"
+    echo -e "${SILVER}  Installing $name...${NC}"
     echo ""
 
     case "$os" in
@@ -69,14 +69,14 @@ palladium_install() {
                 choco install "$name" -y 2>&1 && return 0
             fi
             echo -e "  Please install $name from:"
-            echo -e "  ${CYAN}$3${NC}"
+            echo -e "  ${SILVER}$3${NC}"
             return 1
             ;;
         macos)
             if command -v brew &> /dev/null; then
                 brew install "$4" 2>&1 && return 0
             fi
-            echo -e "  Install Homebrew first, then: ${CYAN}brew install $4${NC}"
+            echo -e "  Install Homebrew first, then: ${SILVER}brew install $4${NC}"
             return 1
             ;;
         linux)
@@ -107,7 +107,7 @@ install_tools() {
     os=$(detect_os)
     local all_ok=true
 
-    echo -e "${CYAN}${BOLD}  ═══ Installing Essential Tools ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Installing Essential Tools ═══${NC}"
     echo ""
     echo -e "  ${DIM}Palladium will install the following tools automatically:${NC}"
     echo ""
@@ -132,12 +132,12 @@ install_tools() {
                 return 1
             fi
 
-            echo -e "${CYAN}  Step 1/5: Installing Git...${NC}"
+            echo -e "${SILVER}  Step 1/5: Installing Git...${NC}"
             winget install --exact --id Git.Git --silent --accept-package-agreements 2>&1 && \
                 echo -e "${GREEN}  ✓ Git installed${NC}" || { echo -e "${RED}  ✗ Git failed${NC}"; all_ok=false; }
 
             echo ""
-            echo -e "${CYAN}  Step 2/5: Installing Docker Desktop...${NC}"
+            echo -e "${SILVER}  Step 2/5: Installing Docker Desktop...${NC}"
             if find_docker_cli &> /dev/null; then
                 echo -e "${GREEN}  ✓ Docker already installed${NC}"
             else
@@ -146,17 +146,17 @@ install_tools() {
             fi
 
             echo ""
-            echo -e "${CYAN}  Step 3/5: Installing Python...${NC}"
+            echo -e "${SILVER}  Step 3/5: Installing Python...${NC}"
             winget install --exact --id Python.Python.3.12 --silent --accept-package-agreements 2>&1 && \
                 echo -e "${GREEN}  ✓ Python installed${NC}" || { echo -e "${RED}  ✗ Python failed${NC}"; all_ok=false; }
 
             echo ""
-            echo -e "${CYAN}  Step 4/5: Installing Node.js...${NC}"
+            echo -e "${SILVER}  Step 4/5: Installing Node.js...${NC}"
             winget install --exact --id OpenJS.NodeJS.LTS --silent --accept-package-agreements 2>&1 && \
                 echo -e "${GREEN}  ✓ Node.js installed${NC}" || { echo -e "${RED}  ✗ Node.js failed${NC}"; all_ok=false; }
 
             echo ""
-            echo -e "${CYAN}  Step 5/5: Installing VS Code...${NC}"
+            echo -e "${SILVER}  Step 5/5: Installing VS Code...${NC}"
             winget install --exact --id Microsoft.VisualStudioCode --silent --accept-package-agreements 2>&1 && \
                 echo -e "${GREEN}  ✓ VS Code installed${NC}" || { echo -e "${RED}  ✗ VS Code failed${NC}"; all_ok=false; }
             ;;
@@ -167,7 +167,7 @@ install_tools() {
                 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
             fi
 
-            echo -e "${CYAN}  Installing tools via Homebrew...${NC}"
+            echo -e "${SILVER}  Installing tools via Homebrew...${NC}"
             brew install git curl wget python node 2>&1 || all_ok=false
             brew install --cask docker visual-studio-code 2>&1 || all_ok=false
             ;;
@@ -186,10 +186,10 @@ install_tools() {
             fi
 
             if [ -n "$pm" ]; then
-                echo -e "${CYAN}  Updating package list...${NC}"
+                echo -e "${SILVER}  Updating package list...${NC}"
                 eval "$update_cmd" 2>&1 || true
                 echo ""
-                echo -e "${CYAN}  Installing tools...${NC}"
+                echo -e "${SILVER}  Installing tools...${NC}"
                 eval "$install_cmd git curl wget python3 python3-pip nodejs build-essential" 2>&1 || all_ok=false
             else
                 echo -e "${RED}  No supported package manager found.${NC}"

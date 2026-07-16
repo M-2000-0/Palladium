@@ -1,9 +1,28 @@
 #!/bin/bash
 # network.sh - LAN sharing, reverse proxy, domain management
 
+# Portable port check - works on Linux, macOS, Windows (Git Bash/WSL)
+port_in_use() {
+    local port="$1"
+    local host="${2:-127.0.0.1}"
+    timeout 1 bash -c "echo >/dev/tcp/${host}/${port}" 2>/dev/null
+}
+
+# Check if port is listening on all interfaces (0.0.0.0)
+port_exposed() {
+    local port="$1"
+    if command -v ss &>/dev/null; then
+        ss -tln 2>/dev/null | grep -q ":$port "
+    elif command -v netstat &>/dev/null; then
+        netstat -tln 2>/dev/null | grep -q ":$port "
+    else
+        port_in_use "$port" "0.0.0.0"
+    fi
+}
+
 network_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Network & Sharing ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Network & Sharing ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}LAN Access${NC}          Share services on your network"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Reverse Proxy${NC}       Nginx proxy manager"
@@ -23,7 +42,7 @@ network_menu() {
 
 lan_access() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ LAN Access ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ LAN Access ═══${NC}"
     echo ""
     echo -e "  ${DIM}Make your services accessible from other devices.${NC}"
     echo ""
@@ -81,7 +100,7 @@ lan_access() {
 
 reverse_proxy() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Reverse Proxy ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Reverse Proxy ═══${NC}"
     echo ""
     echo -e "  ${DIM}Route traffic to your services with custom domains.${NC}"
     echo ""
@@ -191,11 +210,11 @@ EOF
 
 port_scanner() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Port Scanner ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Port Scanner ═══${NC}"
     echo ""
 
     local local_ip=$(hostname -I 2>/dev/null | awk '{print $1}')
-    echo -e "  ${CYAN}Scanning localhost...${NC}"
+    echo -e "  ${SILVER}Scanning localhost...${NC}"
     echo ""
 
     for svc_dir in "$INSTALLED_DIR"/*/; do
@@ -206,7 +225,7 @@ port_scanner() {
         local status="${RED}closed${NC}"
 
         if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${name}$"; then
-            if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port" 2>/dev/null | grep -qE "200|301|302|401"; then
+            if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port" 2>/dev/null | grep -qE "200|301|302|401|403"; then
                 status="${GREEN}open${NC}"
             else
                 status="${YELLOW}listening${NC}"
@@ -217,40 +236,48 @@ port_scanner() {
     done
 
     echo ""
-    echo -e "  ${CYAN}All listening ports:${NC}"
-    ss -tlnp 2>/dev/null | grep -v "^State" | awk '{print "  " $4 " " $6}' | head -20
+    echo -e "  ${SILVER}All listening ports:${NC}"
+    if command -v ss &>/dev/null; then
+        ss -tln 2>/dev/null | grep -v "^State" | awk '{print "  " $4}' | head -20
+    elif command -v netstat &>/dev/null; then
+        netstat -tln 2>/dev/null | grep -v "^Active\|^Proto" | awk '{print "  " $4}' | head -20
+    else
+        for port in $(seq 1 65535); do
+            port_in_use "$port" "127.0.0.1" && echo "  127.0.0.1:$port"
+        done | head -20
+    fi
     press_enter
 }
 
 network_info() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Network Information ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Network Information ═══${NC}"
     echo ""
 
-    echo -e "  ${CYAN}Interfaces:${NC}"
+    echo -e "  ${SILVER}Interfaces:${NC}"
     ip addr show 2>/dev/null | grep -E "inet |^[0-9]" | awk '{print "  " $0}' | head -20
     echo ""
 
-    echo -e "  ${CYAN}Default Gateway:${NC}"
+    echo -e "  ${SILVER}Default Gateway:${NC}"
     ip route 2>/dev/null | grep default | awk '{print "  " $0}'
     echo ""
 
-    echo -e "  ${CYAN}DNS Servers:${NC}"
+    echo -e "  ${SILVER}DNS Servers:${NC}"
     cat /etc/resolv.conf 2>/dev/null | grep nameserver | awk '{print "  " $2}'
     echo ""
 
-    echo -e "  ${CYAN}Public IP:${NC}"
+    echo -e "  ${SILVER}Public IP:${NC}"
     curl -s ifconfig.me 2>/dev/null && echo ""
     echo ""
 
-    echo -e "  ${CYAN}Hostname:${NC}"
+    echo -e "  ${SILVER}Hostname:${NC}"
     echo "  $(hostname 2>/dev/null)"
     press_enter
 }
 
 reverse_proxy_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Reverse Proxy Options ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Reverse Proxy Options ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Nginx Proxy Manager${NC}"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Traefik${NC}"
@@ -269,7 +296,7 @@ reverse_proxy_menu() {
 
 show_lan_access() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ LAN Access URLs ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ LAN Access URLs ═══${NC}"
     echo ""
 
     local lan_ip=$(hostname -I 2>/dev/null | awk '{print $1}')

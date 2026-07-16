@@ -6,14 +6,14 @@
 set -euo pipefail
 
 # ─── Colors ───
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; SILVER='\033[1;37m'; BOLD='\033[1m'; NC='\033[0m'
 
 # ─── Spinner ───
 spinner() {
     local pid=$1 msg=$2 spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏' i=0
     tput civis
     while kill -0 $pid 2>/dev/null; do
-        printf "\r${CYAN}${spin:i++%${#spin}:1}${NC} $msg"
+        printf "\r${SILVER}${spin:i++%${#spin}:1}${NC} $msg"
         sleep 0.1
     done
     tput cnorm
@@ -23,7 +23,7 @@ spinner() {
 run() { eval "$1" &>/dev/null & spinner $! "$2"; }
 
 # ─── Banner ───
-echo -e "${CYAN}${BOLD}"
+echo -e "${SILVER}${BOLD}"
 cat << 'EOF'
 ██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗
 ██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║
@@ -48,7 +48,7 @@ INSTALL_DIR="${PALLADIUM_INSTALL_DIR:-$HOME/.palladium}"
 REPO_URL="${PALLADIUM_REPO_URL:-https://github.com/M-2000-0/Palladium}"
 BRANCH="${PALLADIUM_BRANCH:-main}"
 
-echo -e "${CYAN}Installing Palladium to ${BOLD}$INSTALL_DIR${NC}"
+echo -e "${SILVER}Installing Palladium to ${BOLD}$INSTALL_DIR${NC}"
 echo ""
 
 # ─── 1. Install prerequisites ───
@@ -61,7 +61,7 @@ fi
 
 # Docker
 if ! command -v docker &>/dev/null; then
-    echo -e "${CYAN}Installing Docker...${NC}"
+    echo -e "${SILVER}Installing Docker...${NC}"
     if [[ "$OS" == "Linux" ]]; then
         run "curl -fsSL https://get.docker.com | sh" "Installing Docker (official script)"
         sudo usermod -aG docker "$USER" 2>/dev/null || true
@@ -79,7 +79,7 @@ fi
 
 # Docker daemon
 if ! docker info &>/dev/null; then
-    echo -e "${CYAN}Starting Docker daemon...${NC}"
+    echo -e "${SILVER}Starting Docker daemon...${NC}"
     if [[ "$OS" == "Linux" ]]; then
         sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
         sleep 3
@@ -135,17 +135,17 @@ echo -e "${GREEN}${BOLD}══════════════════�
 echo -e "${GREEN}${BOLD}  Palladium installed successfully!${NC}"
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "Location: ${CYAN}$INSTALL_DIR${NC}"
+echo -e "Location: ${SILVER}$INSTALL_DIR${NC}"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo -e "  ${CYAN}source $SHELL_RC${NC}   (or restart your terminal)"
-echo -e "  ${CYAN}palladium${NC}            (launch the menu)"
+echo -e "  ${SILVER}source $SHELL_RC${NC}   (or restart your terminal)"
+echo -e "  ${SILVER}palladium${NC}            (launch the menu)"
 echo ""
 echo -e "${DIM}Quick commands:${NC}"
-echo -e "  ${CYAN}palladium${NC}                  Launch interactive menu"
-echo -e "  ${CYAN}palladium install ollama${NC}   Install Ollama (local LLM)"
-echo -e "  ${CYAN}palladium start ollama${NC}     Start it"
-echo -e "  ${CYAN}palladium status${NC}           Show all services"
+echo -e "  ${SILVER}palladium${NC}                  Launch interactive menu"
+echo -e "  ${SILVER}palladium install ollama${NC}   Install Ollama (local LLM)"
+echo -e "  ${SILVER}palladium start ollama${NC}     Start it"
+echo -e "  ${SILVER}palladium status${NC}           Show all services"
 echo ""
 echo -e "${DIM}For USB/SSD install: copy $INSTALL_DIR to your drive and run ./palladium from there${NC}"
 echo ""

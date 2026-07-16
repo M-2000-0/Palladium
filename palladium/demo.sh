@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 NC='\033[0m'
 
 # Header
@@ -132,15 +132,15 @@ ${BOLD}Run: $ ${BOLD}palladium quick ai${NC}${NC}
 EOF
 
 echo -e "\n${GREEN}🎉 Ready to get started?${NC}"
-echo -e "${CYAN}Run: ${BOLD}palladium quick ai${NC} ${NC}" │ AI locally on your SSD
+echo -e "${SILVER}Run: ${BOLD}palladium quick ai${NC} ${NC}" │ AI locally on your SSD
 
 echo -e "\n${YELLOW}No time? Try this:${NC}"
-echo -e "${BOLD}1.${NC} Install AI: ${CYAN}palladium quick ai${NC}"
-echo -e "${BOLD}2.${NC} Setup payments: ${CYAN}palladium quick store${NC}"
-echo -e "${BOLD}3.${NC} View installed: ${CYAN}palladium status${NC}"
-echo -e "${BOLD}4.${NC} Browse marketplace: ${CYAN}palladium marketplace${NC}"
+echo -e "${BOLD}1.${NC} Install AI: ${SILVER}palladium quick ai${NC}"
+echo -e "${BOLD}2.${NC} Setup payments: ${SILVER}palladium quick store${NC}"
+echo -e "${BOLD}3.${NC} View installed: ${SILVER}palladium status${NC}"
+echo -e "${BOLD}4.${NC} Browse marketplace: ${SILVER}palladium marketplace${NC}"
 
-read -p "\n${CYAN}Press Enter to see a DEMO of AI setup...${NC}" dummy
+read -p "\n${SILVER}Press Enter to see a DEMO of AI setup...${NC}" dummy
 
 cat << EOF
 
@@ -203,6 +203,6 @@ cat << EOF
 
 ${GREEN}🎉 SUCCESS! You now have AI running locally!${NC}
 
-${YELLOW}Previous demo completed! ${CYAN}Your quick guide is ready for use.${NC}
+${YELLOW}Previous demo completed! ${SILVER}Your quick guide is ready for use.${NC}
 
 ╚════════════════════════════════╝

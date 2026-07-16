@@ -6,7 +6,7 @@ mkdir -p "$BACKUP_DIR"
 
 backup_all() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Backup All Services ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Backup All Services ═══${NC}"
     echo ""
 
     local count=0
@@ -25,7 +25,7 @@ backup_all() {
     local backup_file="$BACKUP_DIR/$backup_name.tar.gz"
 
     echo ""
-    echo -e "${CYAN}  Services to backup:${NC}"
+    echo -e "${SILVER}  Services to backup:${NC}"
     for svc_dir in "$INSTALLED_DIR"/*/; do
         [ -d "$svc_dir" ] || continue
         local name=$(basename "$svc_dir")
@@ -132,7 +132,7 @@ backup_single() {
 
 restore_backup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Restore from Backup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Restore from Backup ═══${NC}"
     echo ""
 
     # List available backups
@@ -171,7 +171,7 @@ restore_backup() {
     local backup_name=$(basename "$selected" .tar.gz)
 
     echo ""
-    echo -e "${CYAN}  Backup contents:${NC}"
+    echo -e "${SILVER}  Backup contents:${NC}"
     tar tzf "$selected" 2>/dev/null | head -20 | sed 's/^/    /'
     echo ""
 
@@ -232,7 +232,7 @@ restore_backup() {
 }
 
 list_backups() {
-    echo -e "${CYAN}Available backups:${NC}"
+    echo -e "${SILVER}Available backups:${NC}"
     echo ""
     local found=0
     for backup_file in "$BACKUP_DIR"/*.tar.gz; do

@@ -105,7 +105,7 @@ server_dashboard() {
                 ;;
             help|?)
                 echo ""
-                echo -e "  ${CYAN}Commands:${NC}"
+                echo -e "  ${SILVER}Commands:${NC}"
                 echo -e "    ${BOLD}status${NC}           Show this dashboard"
                 echo -e "    ${BOLD}start <n>${NC}        Start service by number"
                 echo -e "    ${BOLD}stop <n>${NC}         Stop service by number"
@@ -227,7 +227,7 @@ server_dashboard() {
             *)
                 echo ""
                 echo -e "  ${YELLOW}Unknown command: ${BOLD}$cmd${NC}"
-                echo -e "  ${DIM}Type ${CYAN}help${DIM} for available commands${NC}"
+                echo -e "  ${DIM}Type ${SILVER}help${DIM} for available commands${NC}"
                 sleep 1
                 continue
                 ;;

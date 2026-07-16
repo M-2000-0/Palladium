@@ -5,7 +5,7 @@ SUPABASE_CONFIG="$DATA_DIR/supabase.conf"
 
 supabase_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Supabase Integration ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Supabase Integration ═══${NC}"
     echo ""
 
     if [ -f "$SUPABASE_CONFIG" ]; then
@@ -51,7 +51,7 @@ supabase_menu() {
 
 supabase_connect() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Connect Supabase ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Connect Supabase ═══${NC}"
     echo ""
     echo -e "  ${DIM}Enter your Supabase project credentials.${NC}"
     echo -e "  ${DIM}Find these at: https://supabase.com/dashboard → Project Settings → API${NC}"
@@ -68,7 +68,7 @@ supabase_connect() {
     local connection_string="postgresql://postgres.$db_host:5432/postgres?sslmode=require"
 
     echo ""
-    echo -e "${CYAN}  Connection Details:${NC}"
+    echo -e "${SILVER}  Connection Details:${NC}"
     echo -e "  Project:    $project_name"
     echo -e "  URL:        $supabase_url"
     echo -e "  Host:       db.$db_host.supabase.co"
@@ -137,7 +137,7 @@ supabase_show_details() {
 
     source "$SUPABASE_CONFIG"
     echo ""
-    echo -e "${CYAN}  Connection Details:${NC}"
+    echo -e "${SILVER}  Connection Details:${NC}"
     echo -e "  Project:     $PROJECT_NAME"
     echo -e "  URL:         $SUPABASE_URL"
     echo -e "  Dashboard:   https://supabase.com/dashboard"
@@ -155,7 +155,7 @@ supabase_show_details() {
 
 supabase_what_is() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ What is Supabase? ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ What is Supabase? ═══${NC}"
     echo ""
     echo -e "  Supabase is an open-source alternative to Firebase."
     echo -e "  It gives you:"
@@ -167,13 +167,13 @@ supabase_what_is() {
     echo -e "    ${GREEN}Edge Functions${NC}        - Serverless functions"
     echo -e "    ${GREEN}Vector/AI${NC}             - pgvector for AI embeddings"
     echo ""
-    echo -e "  ${CYAN}Free tier includes:${NC}"
+    echo -e "  ${SILVER}Free tier includes:${NC}"
     echo -e "    - 500MB database"
     echo -e "    - 1GB file storage"
     echo -e "    - 50,000 monthly active users"
     echo -e "    - 500MB bandwidth"
     echo ""
-    echo -e "  ${CYAN}Sign up:${NC} https://supabase.com"
+    echo -e "  ${SILVER}Sign up:${NC} https://supabase.com"
     echo ""
     press_enter
 }
@@ -195,7 +195,7 @@ supabase_use_in_service() {
     source "$SUPABASE_CONFIG"
 
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Use Supabase in a Service ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Use Supabase in a Service ═══${NC}"
     echo ""
     echo -e "  Copy these environment variables into your service's"
     echo -e "  docker-compose.yml to connect it to Supabase:"

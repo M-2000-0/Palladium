@@ -7,10 +7,10 @@ cd "$BASE"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 NC='\033[0m'
 
-echo -e "${CYAN}${GREEN}=== Palladium - First Time Setup ===${NC}"
+echo -e "${SILVER}${GREEN}=== Palladium - First Time Setup ===${NC}"
 echo ""
 
 # Check Docker
@@ -48,11 +48,11 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Setup Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "  Run ${CYAN}./palladium/palladium${NC} to launch the menu"
-echo -e "  Run ${CYAN}./install.sh${NC} to install the CLI system-wide"
+echo -e "  Run ${SILVER}./palladium/palladium${NC} to launch the menu"
+echo -e "  Run ${SILVER}./install.sh${NC} to install the CLI system-wide"
 echo ""
 echo -e "  Quick start:"
-echo -e "    ${CYAN}palladium stack starter${NC}   # n8n + PostgreSQL"
-echo -e "    ${CYAN}palladium install ollama${NC}   # Local LLM"
-echo -e "    ${CYAN}palladium marketplace${NC}      # Browse all tools"
+echo -e "    ${SILVER}palladium stack starter${NC}   # n8n + PostgreSQL"
+echo -e "    ${SILVER}palladium install ollama${NC}   # Local LLM"
+echo -e "    ${SILVER}palladium marketplace${NC}      # Browse all tools"
 echo -e "${GREEN}========================================${NC}"

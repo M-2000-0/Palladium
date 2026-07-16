@@ -6,7 +6,7 @@ mkdir -p "$MONITOR_DIR"
 
 monitor_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Monitoring ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Monitoring ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Resource usage${NC}      CPU, RAM, disk"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Service status${NC}      Uptime for all services"
@@ -26,39 +26,39 @@ monitor_menu() {
 
 resource_usage() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Resource Usage ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Resource Usage ═══${NC}"
     echo ""
 
     # CPU
-    echo -e "${CYAN}CPU:${NC}"
+    echo -e "${SILVER}CPU:${NC}"
     local cpu_usage=$(top -bn1 2>/dev/null | grep "Cpu(s)" | awk '{print $2}' || echo "N/A")
     echo -e "  Usage: ${BOLD}${cpu_usage}%${NC}"
     echo ""
 
     # RAM
-    echo -e "${CYAN}Memory:${NC}"
+    echo -e "${SILVER}Memory:${NC}"
     free -h 2>/dev/null | awk 'NR==2{printf "  Used: %s / %s (%s free)\n", $3, $2, $4}'
     echo ""
 
     # Disk
-    echo -e "${CYAN}Disk:${NC}"
+    echo -e "${SILVER}Disk:${NC}"
     df -h 2>/dev/null | awk 'NR==2{printf "  Used: %s / %s (%s free, %s used)\n", $3, $2, $4, $5}'
     echo ""
 
     # Docker
-    echo -e "${CYAN}Docker:${NC}"
+    echo -e "${SILVER}Docker:${NC}"
     docker system df 2>/dev/null | awk 'NR>1{printf "  %s: %s used\n", $1, $3}'
     echo ""
 
     # Per-service resource usage
-    echo -e "${CYAN}Per-service Docker usage:${NC}"
+    echo -e "${SILVER}Per-service Docker usage:${NC}"
     docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}" 2>/dev/null | head -20
     press_enter
 }
 
 service_uptime() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Service Uptime ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Service Uptime ═══${NC}"
     echo ""
 
     for svc_dir in "$INSTALLED_DIR"/*/; do
@@ -105,12 +105,12 @@ service_uptime() {
 }
 
 live_monitor() {
-    echo -e "${CYAN}Live monitor (press Ctrl+C to exit)${NC}"
+    echo -e "${SILVER}Live monitor (press Ctrl+C to exit)${NC}"
     echo ""
 
     while true; do
         clear 2>/dev/null || true
-        echo -e "${CYAN}${BOLD}  ═══ Live Monitor ═══$(date +%H:%M:%S)═══${NC}"
+        echo -e "${SILVER}${BOLD}  ═══ Live Monitor ═══$(date +%H:%M:%S)═══${NC}"
         echo ""
 
         # System resources
@@ -121,7 +121,7 @@ live_monitor() {
         echo ""
 
         # Services
-        echo -e "  ${CYAN}Services:${NC}"
+        echo -e "  ${SILVER}Services:${NC}"
         for svc_dir in "$INSTALLED_DIR"/*/; do
             [ -d "$svc_dir" ] || continue
             local name=$(basename "$svc_dir")
@@ -140,7 +140,7 @@ live_monitor() {
 
 set_limits() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Resource Limits ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Resource Limits ═══${NC}"
     echo ""
     echo -e "  ${DIM}Set CPU and memory limits for services.${NC}"
     echo ""
@@ -193,7 +193,7 @@ EOF
 
 set_service_limits() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Service Resource Limits ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Service Resource Limits ═══${NC}"
     echo ""
 
     if ! command -v docker &>/dev/null; then

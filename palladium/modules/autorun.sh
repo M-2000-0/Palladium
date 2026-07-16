@@ -4,7 +4,7 @@
 
 autorun_setup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ USB Autorun Setup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ USB Autorun Setup ═══${NC}"
     echo ""
 
     local target_dir="$PALLADIUM_HOME/.."
@@ -13,7 +13,7 @@ autorun_setup() {
     echo -e "    ${target_dir}"
     echo ""
 
-    echo -e "  ${CYAN}Cross-platform launchers:${NC}"
+    echo -e "  ${SILVER}Cross-platform launchers:${NC}"
 
     # Windows
     cp "$PALLADIUM_HOME/autorun.inf" "$target_dir/autorun.inf" 2>/dev/null && \
@@ -38,7 +38,7 @@ autorun_setup() {
     fi
 
     echo ""
-    echo -e "  ${CYAN}Background monitor scripts (inside palladium/):${NC}"
+    echo -e "  ${SILVER}Background monitor scripts (inside palladium/):${NC}"
     echo -e "  ${GREEN}✓${NC} watch-usb.ps1         (Windows PowerShell)"
     echo -e "  ${GREEN}✓${NC} watch-usb.sh          (Linux/Mac shell)"
     echo -e "  ${GREEN}✓${NC} install-autorun.ps1   (Windows Task Scheduler installer)"
@@ -63,14 +63,14 @@ autorun_setup() {
 
     case "$os" in
         windows)
-            echo -e "  ${BOLD}${CYAN}Windows setup:${NC}"
+            echo -e "  ${BOLD}${SILVER}Windows setup:${NC}"
             echo ""
-            echo -e "    ${GREEN}1.${NC} Double-click ${CYAN}start-palladium.bat${NC} on the USB"
+            echo -e "    ${GREEN}1.${NC} Double-click ${SILVER}start-palladium.bat${NC} on the USB"
             echo -e "    ${GREEN}2.${NC} Install Task Scheduler (auto-start on USB insert)"
             echo ""
             if confirm "  Install Task Scheduler autorun?"; then
                 echo ""
-                echo -e "  ${CYAN}Launching PowerShell installer...${NC}"
+                echo -e "  ${SILVER}Launching PowerShell installer...${NC}"
                 echo ""
                 if command -v powershell &>/dev/null; then
                     powershell -NoProfile -ExecutionPolicy Bypass -File "$PALLADIUM_HOME/install-autorun.ps1"
@@ -78,19 +78,19 @@ autorun_setup() {
                     echo -e "  ${GREEN}Task Scheduler installed!${NC}"
                 else
                     echo -e "  ${RED}PowerShell not found. Run manually:${NC}"
-                    echo -e "  ${CYAN}powershell -File palladium\\install-autorun.ps1${NC}"
+                    echo -e "  ${SILVER}powershell -File palladium\\install-autorun.ps1${NC}"
                 fi
             fi
             ;;
         macos)
-            echo -e "  ${BOLD}${CYAN}macOS setup:${NC}"
+            echo -e "  ${BOLD}${SILVER}macOS setup:${NC}"
             echo ""
-            echo -e "    ${GREEN}1.${NC} Double-click ${CYAN}start-palladium.command${NC} on the USB"
+            echo -e "    ${GREEN}1.${NC} Double-click ${SILVER}start-palladium.command${NC} on the USB"
             echo -e "    ${GREEN}2.${NC} Install launchd agent (auto-start on USB insert)"
             echo ""
             if confirm "  Install launchd autorun?"; then
                 echo ""
-                echo -e "  ${CYAN}Running installer...${NC}"
+                echo -e "  ${SILVER}Running installer...${NC}"
                 echo ""
                 if command -v osascript &>/dev/null; then
                     osascript -e "tell application \"Terminal\" to do script \"bash '$PALLADIUM_HOME/install-autorun.sh'\"" &
@@ -102,14 +102,14 @@ autorun_setup() {
             fi
             ;;
         linux)
-            echo -e "  ${BOLD}${CYAN}Linux setup:${NC}"
+            echo -e "  ${BOLD}${SILVER}Linux setup:${NC}"
             echo ""
-            echo -e "    ${GREEN}1.${NC} Double-click ${CYAN}start-palladium.sh${NC} in your file manager"
+            echo -e "    ${GREEN}1.${NC} Double-click ${SILVER}start-palladium.sh${NC} in your file manager"
             echo -e "    ${GREEN}2.${NC} Install systemd user service (auto-start on USB insert)"
             echo ""
             if confirm "  Install systemd autorun?"; then
                 echo ""
-                echo -e "  ${CYAN}Running installer...${NC}"
+                echo -e "  ${SILVER}Running installer...${NC}"
                 echo ""
                 bash "$PALLADIUM_HOME/install-autorun.sh"
             fi
@@ -117,7 +117,7 @@ autorun_setup() {
         other)
             echo -e "  ${YELLOW}Unknown OS. Manual setup:${NC}"
             echo ""
-            echo -e "    Run: ${CYAN}bash palladium/start-palladium.sh${NC} from USB root"
+            echo -e "    Run: ${SILVER}bash palladium/start-palladium.sh${NC} from USB root"
             ;;
     esac
 

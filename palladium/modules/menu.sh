@@ -25,12 +25,12 @@ main_menu() {
 
         # Banner
         echo ""
-        echo -e "${CYAN}${BOLD}██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗${NC}"
-        echo -e "${CYAN}${BOLD}██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║${NC}"
-        echo -e "${CYAN}${BOLD}██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║${NC}"
-        echo -e "${CYAN}${BOLD}██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║${NC}"
-        echo -e "${CYAN}${BOLD}██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║${NC}"
-        echo -e "${CYAN}${BOLD}╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝${NC}"
+        echo -e "${SILVER}${BOLD}██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗${NC}"
+        echo -e "${SILVER}${BOLD}██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║${NC}"
+        echo -e "${SILVER}${BOLD}██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║${NC}"
+        echo -e "${SILVER}${BOLD}██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║${NC}"
+        echo -e "${SILVER}${BOLD}██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║${NC}"
+        echo -e "${SILVER}${BOLD}╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝${NC}"
         echo -e "${DIM}  Portable Server Manager — Plug in. Power up. Host anything.${NC}"
         echo ""
 
@@ -76,11 +76,11 @@ main_menu() {
 
         echo ""
         if $docker_ok; then
-            echo -e "  ${GREEN}Docker: Running${NC}  |  ${CYAN}Services: $running active${NC}$drive_label"
+            echo -e "  ${GREEN}Docker: Running${NC}  |  ${SILVER}Services: $running active${NC}$drive_label"
         else
             echo -e "  ${RED}Docker: Not running${NC}  |  ${YELLOW}Install from Settings${NC}$drive_label"
         fi
-        echo -e "  ${DIM}Type '${CYAN}t${DIM}' tools  '${CYAN}d${DIM}' dashboard${NC}"
+        echo -e "  ${DIM}Type '${SILVER}t${DIM}' tools  '${SILVER}d${DIM}' dashboard${NC}"
         echo ""
         read -p "  Select option: " choice
         case $choice in
@@ -111,7 +111,7 @@ main_menu() {
 
 stacks_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Quick Start Stacks ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Quick Start Stacks ═══${NC}"
     echo ""
     echo -e "  ${DIM}One click. Complete setup. No configuration needed.${NC}"
     echo ""
@@ -163,7 +163,7 @@ stacks_menu() {
 
 install_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Install a Service ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Install a Service ═══${NC}"
     echo ""
 
     if ! check_docker_available 2>/dev/null; then
@@ -197,7 +197,7 @@ install_menu() {
 
 manage_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Manage Services ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Manage Services ═══${NC}"
     echo ""
     local installed=()
     local i=1
@@ -232,7 +232,7 @@ service_action_menu() {
     local svc="$1"
     while true; do
         clear 2>/dev/null || true
-        echo -e "${CYAN}${BOLD}  ═══ $svc ═══${NC}"
+        echo -e "${SILVER}${BOLD}  ═══ $svc ═══${NC}"
         echo ""
 
         local port_file="$INSTALLED_DIR/$svc/.port"
@@ -294,7 +294,7 @@ show_qr() {
     local url="$1"
     if command -v qrencode &>/dev/null; then
         echo ""
-        echo -e "${CYAN}  Scan for mobile access:${NC}"
+        echo -e "${SILVER}  Scan for mobile access:${NC}"
         qrencode -t ANSIUTF8 "$url" 2>/dev/null | sed 's/^/  /'
         echo ""
     fi
@@ -302,7 +302,7 @@ show_qr() {
 
 tools_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Drives & Install ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Drives & Install ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  View drive information"
     echo -e "  ${BOLD}[2]${NC}  Install Palladium to a USB/SSD"
@@ -322,7 +322,7 @@ tools_menu() {
 
 install_palladium_to_drive() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Install to USB/SSD ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Install to USB/SSD ═══${NC}"
     echo ""
 
     show_usb_info
@@ -343,7 +343,7 @@ install_palladium_to_drive() {
 
 backup_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Backup & Restore ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Backup & Restore ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Backup all services"
     echo -e "  ${BOLD}[2]${NC}  Restore from backup"
@@ -361,7 +361,7 @@ backup_menu() {
 
 security_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Security & Encryption ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Security & Encryption ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Secrets manager (store API keys, passwords)"
     echo -e "  ${BOLD}[2]${NC}  Password audit (check strength)"
@@ -384,7 +384,7 @@ security_menu() {
 
 network_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Network & Access ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Network & Access ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Show LAN access URLs for all services"
     echo -e "  ${BOLD}[2]${NC}  Reverse proxy setup (Nginx/Traefik)"
@@ -405,7 +405,7 @@ network_menu() {
 
 monitor_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Monitoring & Limits ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Monitoring & Limits ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Resource usage (CPU, RAM, disk)"
     echo -e "  ${BOLD}[2]${NC}  Service uptime & health"
@@ -426,7 +426,7 @@ monitor_menu() {
 
 updates_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Updates & Versions ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Updates & Versions ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Check for Palladium updates"
     echo -e "  ${BOLD}[2]${NC}  Update Palladium"
@@ -449,7 +449,7 @@ updates_menu() {
 
 notify_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Notifications & Alerts ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Notifications & Alerts ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Configure Telegram notifications"
     echo -e "  ${BOLD}[2]${NC}  Configure email notifications"
@@ -472,7 +472,7 @@ notify_menu() {
 
 profiles_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Profiles & Users ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Profiles & Users ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Switch profile"
     echo -e "  ${BOLD}[2]${NC}  Create new profile"
@@ -495,7 +495,7 @@ profiles_menu() {
 
 clone_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone & Migrate ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone & Migrate ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Clone Palladium to another drive"
     echo -e "  ${BOLD}[2]${NC}  Clone from another drive"
@@ -518,7 +518,7 @@ clone_menu() {
 
 limits_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Set Resource Limits ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Set Resource Limits ═══${NC}"
     echo ""
 
     local installed=()
@@ -541,7 +541,7 @@ limits_menu() {
 
 logs_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ View Logs ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ View Logs ═══${NC}"
     echo ""
     local installed=()
     local i=1
@@ -563,7 +563,7 @@ logs_menu() {
 
 settings_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Cleanup & Settings ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Cleanup & Settings ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  Install Docker"
     echo -e "  ${BOLD}[2]${NC}  Install qrencode (QR codes)"
@@ -580,14 +580,14 @@ settings_menu() {
         3) cleanup_all; press_enter ;;
         4) cleanup_docker_full; press_enter ;;
         5) echo ""; docker info 2>/dev/null || echo -e "${RED}Docker not running${NC}"; press_enter ;;
-        6) echo ""; df -h 2>/dev/null; echo ""; echo -e "${CYAN}Palladium services:${NC}"; du -sh "$INSTALLED_DIR"/*/ 2>/dev/null | sort -rh; press_enter ;;
+        6) echo ""; df -h 2>/dev/null; echo ""; echo -e "${SILVER}Palladium services:${NC}"; du -sh "$INSTALLED_DIR"/*/ 2>/dev/null | sort -rh; press_enter ;;
         0) return ;;
     esac
 }
 
 show_help() {
     show_banner
-    echo -e "${CYAN}Commands:${NC}"
+    echo -e "${SILVER}Commands:${NC}"
     echo "  palladium                  Launch interactive menu"
     echo "  palladium launch <name>    Install + start in one command"
     echo "  palladium stack            Install a pre-built stack"

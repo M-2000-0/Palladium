@@ -112,7 +112,7 @@ check_usb_storage() {
 
     local drive_type=$(get_drive_type "$mount" "$(( $(df -m "$mount" 2>/dev/null | awk 'NR==2 {print $2}') ))")
 
-    echo -e "${CYAN}  Drive: ${BOLD}$mount${NC}"
+    echo -e "${SILVER}  Drive: ${BOLD}$mount${NC}"
     echo -e "  Type:  ${BOLD}$drive_type${NC}"
     echo -e "  Free:  ${BOLD}${available_mb}MB${NC}"
     echo ""
@@ -159,7 +159,7 @@ usb_optimize_mode() {
     local drive_type=$(get_drive_type "$mount" "$(df -m "$mount" 2>/dev/null | awk 'NR==2 {print $2}')")
 
     if [ "$drive_type" = "usb" ]; then
-        echo -e "${CYAN}  USB Mode: Minimal footprint activated${NC}"
+        echo -e "${SILVER}  USB Mode: Minimal footprint activated${NC}"
         echo ""
 
         # Set environment for minimal mode
@@ -181,7 +181,7 @@ usb_optimize_mode() {
 
 show_usb_info() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Drive Information ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Drive Information ═══${NC}"
     echo ""
 
     local drives
@@ -207,7 +207,7 @@ show_usb_info() {
         local drive_type=$(get_drive_type "$mount" "$(echo "$size" | tr -d 'M')")
         local type_color="${GREEN}"
         [ "$drive_type" = "usb" ] && type_color="${YELLOW}"
-        [ "$drive_type" = "ssd-small" ] && type_color="${CYAN}"
+        [ "$drive_type" = "ssd-small" ] && type_color="${SILVER}"
 
         echo -e "    ${BOLD}$mount${NC}"
         echo -e "      Type: ${type_color}$drive_type${NC}"
@@ -243,8 +243,8 @@ install_to_drive() {
         echo ""
         echo -e "  To use on another computer:"
         echo -e "    1. Plug in the drive"
-        echo -e "    2. Run: ${CYAN}$target_drive/palladium/install.sh${NC}"
-        echo -e "    3. Then: ${CYAN}palladium${NC}"
+        echo -e "    2. Run: ${SILVER}$target_drive/palladium/install.sh${NC}"
+        echo -e "    3. Then: ${SILVER}palladium${NC}"
     else
         echo -e "${RED}Installation failed.${NC}"
     fi

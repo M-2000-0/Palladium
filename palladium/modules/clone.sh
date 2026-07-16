@@ -3,7 +3,7 @@
 
 clone_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone & Migrate ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone & Migrate ═══${NC}"
     echo ""
     echo -e "  ${DIM}Copy your entire Palladium setup to another drive.${NC}"
     echo ""
@@ -27,7 +27,7 @@ clone_menu() {
 
 clone_to() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone to Another Drive ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone to Another Drive ═══${NC}"
     echo ""
 
     # Show available drives
@@ -72,7 +72,7 @@ clone_to() {
 
 clone_from() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone from Another Drive ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone from Another Drive ═══${NC}"
     echo ""
 
     local source=$(prompt_value "  Source drive path")
@@ -96,7 +96,7 @@ clone_from() {
 
 full_backup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Full Backup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Full Backup ═══${NC}"
     echo ""
 
     local backup_dir="$DATA_DIR/backups"
@@ -136,7 +136,7 @@ full_backup() {
 
 full_restore() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Full Restore ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Full Restore ═══${NC}"
     echo ""
 
     local backups=()
@@ -171,24 +171,24 @@ full_restore() {
 
 compare_drives() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Compare Drives ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Compare Drives ═══${NC}"
     echo ""
 
     local source=$(prompt_value "  Source drive path")
     local target=$(prompt_value "  Target drive path")
 
     echo ""
-    echo -e "${CYAN}Source:${NC}"
+    echo -e "${SILVER}Source:${NC}"
     du -sh "$source/palladium" 2>/dev/null || echo "  Not found"
     ls "$source/palladium/data/installed" 2>/dev/null | sed 's/^/  /'
 
     echo ""
-    echo -e "${CYAN}Target:${NC}"
+    echo -e "${SILVER}Target:${NC}"
     du -sh "$target/palladium" 2>/dev/null || echo "  Not found"
     ls "$target/palladium/data/installed" 2>/dev/null | sed 's/^/  /'
 
     echo ""
-    echo -e "${CYAN}Differences:${NC}"
+    echo -e "${SILVER}Differences:${NC}"
     diff <(ls "$source/palladium/data/installed" 2>/dev/null) <(ls "$target/palladium/data/installed" 2>/dev/null) 2>/dev/null || echo "  (comparison shown above)"
 
     press_enter
@@ -196,7 +196,7 @@ compare_drives() {
 
 clone_to_drive() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone to Drive ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone to Drive ═══${NC}"
     echo ""
 
     local target=$(prompt_value "  Target path")
@@ -227,7 +227,7 @@ clone_to_drive() {
 
 clone_from_drive() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Clone from Drive ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Clone from Drive ═══${NC}"
     echo ""
 
     local source=$(prompt_value "  Source path containing palladium")

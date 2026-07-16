@@ -3,7 +3,7 @@
 
 tutorials_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Tutorials & Guides ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Tutorials & Guides ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Getting Started${NC}     First-time walkthrough"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Install your first app${NC}  Step-by-step guide"
@@ -29,7 +29,7 @@ tutorials_menu() {
 
 tutorial_getting_started() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Getting Started with Palladium ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Getting Started with Palladium ═══${NC}"
     echo ""
     echo -e "  ${GREEN}Welcome!${NC} Palladium turns your USB/SSD into a portable server."
     echo ""
@@ -53,7 +53,7 @@ tutorial_getting_started() {
 
 tutorial_first_app() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Install Your First App ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Install Your First App ═══${NC}"
     echo ""
     echo -e "  ${BOLD}Option A: Quick Stack (easiest)${NC}"
     echo -e "  ${DIM}1. palladium${NC}"
@@ -80,7 +80,7 @@ tutorial_first_app() {
 
 tutorial_ai_setup() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI Setup Guide ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI Setup Guide ═══${NC}"
     echo ""
     echo -e "  ${BOLD}Option A: Local AI (free, private)${NC}"
     echo -e "  ${DIM}1. palladium → [5] AI Toolkit${NC}"
@@ -106,7 +106,7 @@ tutorial_ai_setup() {
 
 tutorial_data() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Data Analysis Tutorial ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Data Analysis Tutorial ═══${NC}"
     echo ""
     echo -e "  ${BOLD}Create a database:${NC}"
     echo -e "  ${DIM}1. palladium data → [1] Create database${NC}"
@@ -135,7 +135,7 @@ tutorial_data() {
 
 tutorial_networking() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Networking Tutorial ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Networking Tutorial ═══${NC}"
     echo ""
     echo -e "  ${BOLD}Access from other devices:${NC}"
     echo -e "  ${DIM}1. palladium → [9] Tools → [1] Drive info${NC}"
@@ -157,7 +157,7 @@ tutorial_networking() {
 
 tutorial_security() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Security Tutorial ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Security Tutorial ═══${NC}"
     echo ""
     echo -e "  ${BOLD}Essential steps:${NC}"
     echo ""
@@ -183,7 +183,7 @@ tutorial_security() {
 
 tutorial_commands() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ All Commands ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ All Commands ═══${NC}"
     echo ""
     echo -e "  ${GREEN}Core:${NC}"
     echo "    palladium                  Launch menu"

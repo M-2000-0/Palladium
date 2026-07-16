@@ -1,24 +1,17 @@
 #!/bin/bash
 # start-palladium.command - macOS double-click launcher
-# Rename this file to start-palladium.command (macOS executes .command files in Terminal)
+# Launches Server (Python TUI), falls back to Palladium bash menu
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
+SERVER_DIR="$DIR/Server"
 
-echo ""
-echo "  ============================================================"
-echo "        __        __   _ _    _    ____    __  __  _   _   _"
-echo "        \ \      / /__| | |  | |  / ___|  |  \/  | | | | | |"
-echo "         \ \ /\ / / _ \ | |  | | | |  _   | |\  /| | | | | |"
-echo "          \ V  V /  __/ | |__| |___| |_| |  | | \/| | |_| | |_|"
-echo "           \_/\_/ \___|_|\____/|_____|  |_|  |_|  |\__,_| \__,_|"
-echo ""
-echo "     Portable Server Manager"
-echo "     Plug in. Power up. Host anything."
-echo "  ============================================================"
-echo ""
-echo "  Starting Palladium..."
-echo "  Close this window to stop the server."
-echo ""
+# Try Python TUI first
+if command -v python3 &>/dev/null && [ -f "$SERVER_DIR/server.py" ]; then
+    python3 -m pip install -q rich psutil 2>/dev/null
+    cd "$SERVER_DIR"
+    exec python3 server.py
+fi
 
+# Fallback to bash menu
 cd "$DIR/palladium"
 exec bash palladium

@@ -5,7 +5,7 @@ NOTIFY_CONFIG="$DATA_DIR/notify.conf"
 
 notify_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Notifications ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Notifications ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Setup notifications${NC}   Email or Telegram"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Test notifications${NC}"
@@ -25,7 +25,7 @@ notify_menu() {
 
 setup_notifications() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Setup Notifications ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Setup Notifications ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Telegram${NC}"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Email (SMTP)${NC}"
@@ -120,7 +120,7 @@ test_notification() {
 
 service_watch() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Service Watch ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Service Watch ═══${NC}"
     echo ""
     echo -e "  ${DIM}Monitor services and alert when they go down.${NC}"
     echo ""
@@ -175,7 +175,7 @@ check_service_health() {
 
 view_alerts() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Recent Alerts ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Recent Alerts ═══${NC}"
     echo ""
 
     if [ -f "$MONITOR_DIR/alerts.log" ]; then
@@ -191,7 +191,7 @@ view_alerts() {
 
 notify_setup_telegram() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Telegram Setup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Telegram Setup ═══${NC}"
     echo ""
 
     echo -e "  ${DIM}Create a bot with @BotFather on Telegram,${NC}"
@@ -215,7 +215,7 @@ EOF
 
 notify_setup_email() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Email Setup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Email Setup ═══${NC}"
     echo ""
 
     local smtp_host=$(prompt_value "  SMTP server")
@@ -242,7 +242,7 @@ EOF
 
 notify_setup_watch() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Setup Service Watch ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Setup Service Watch ═══${NC}"
     echo ""
 
     local services=()
@@ -275,7 +275,7 @@ EOF
 
 notify_history() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Notification History ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Notification History ═══${NC}"
     echo ""
 
     local logs=()
@@ -288,7 +288,7 @@ notify_history() {
         echo -e "  ${DIM}No notification logs found.${NC}"
     else
         for log in "${logs[@]}"; do
-            echo -e "${CYAN}File: $(basename "$log")${NC}"
+            echo -e "${SILVER}File: $(basename "$log")${NC}"
             tail -20 "$log" 2>/dev/null | sed 's/^/  /'
             echo ""
         done
@@ -299,7 +299,7 @@ notify_history() {
 
 notify_test() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Test Notifications ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Test Notifications ═══${NC}"
     echo ""
 
     local tested=false

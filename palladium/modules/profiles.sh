@@ -6,7 +6,7 @@ mkdir -p "$PROFILES_DIR"
 
 profiles_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Profiles & Users ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Profiles & Users ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Switch profile${NC}       Different configurations"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Create profile${NC}      New configuration set"
@@ -28,7 +28,7 @@ profiles_menu() {
 
 switch_profile() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Profiles ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Profiles ═══${NC}"
     echo ""
 
     local profiles=()
@@ -124,7 +124,7 @@ import_profile() {
 
 user_management() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ User Management ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ User Management ═══${NC}"
     echo ""
     echo -e "  ${DIM}Manage system users for SSH access.${NC}"
     echo ""
@@ -149,7 +149,7 @@ user_management() {
             ;;
         3)
             echo ""
-            echo -e "${CYAN}System users:${NC}"
+            echo -e "${SILVER}System users:${NC}"
             cat /etc/passwd | grep -v nologin | grep -v false | awk -F: '{print "  " $1 " (uid:" $3 ")"}'
             ;;
         4)
@@ -163,7 +163,7 @@ user_management() {
 
 profile_create() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Create Profile ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Create Profile ═══${NC}"
     echo ""
 
     local name=$(prompt_value "  Profile name")
@@ -182,7 +182,7 @@ EOF
 
 profile_switch() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Switch Profile ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Switch Profile ═══${NC}"
     echo ""
 
     local profiles=()
@@ -211,7 +211,7 @@ profile_switch() {
 
 profile_export() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Export Profile ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Export Profile ═══${NC}"
     echo ""
 
     local profiles=()
@@ -242,7 +242,7 @@ profile_export() {
 
 profile_import() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Import Profile ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Import Profile ═══${NC}"
     echo ""
 
     local source=$(prompt_value "  Source profile path")
@@ -261,18 +261,18 @@ profile_import() {
 
 profile_manage_users() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ SSH User Management ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ SSH User Management ═══${NC}"
     echo ""
 
     echo -e "  ${DIM}Manage system users for SSH access.${NC}"
     echo ""
     echo -e "  ${YELLOW}To add a user:${NC}"
-    echo -e "    ${CYAN}sudo adduser <username>${NC}"
+    echo -e "    ${SILVER}sudo adduser <username>${NC}"
     echo ""
     echo -e "  ${YELLOW}To modify a user:${NC}"
-    echo -e "    ${CYAN}sudo usermod -aG sudo <username>${NC}"
+    echo -e "    ${SILVER}sudo usermod -aG sudo <username>${NC}"
     echo ""
-    echo -e "  ${CYAN}Current users:${NC}"
+    echo -e "  ${SILVER}Current users:${NC}"
     cat /etc/passwd 2>/dev/null | grep -v nologin | grep -v false | awk -F: '{print "    " $1 " (uid:" $3 ")"}'
 
     press_enter

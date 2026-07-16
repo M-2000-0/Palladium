@@ -3,7 +3,7 @@
 set -e
 
 GREEN='\033[0;32m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,7 +14,7 @@ if [ ! -f "$PALLADIUM_CLI" ]; then
     exit 1
 fi
 
-echo -e "${CYAN}=== Palladium Installer ===${NC}"
+echo -e "${SILVER}=== Palladium Installer ===${NC}"
 echo ""
 
 chmod +x "$PALLADIUM_CLI"

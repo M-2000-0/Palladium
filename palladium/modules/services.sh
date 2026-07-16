@@ -1,6 +1,6 @@
 #!/bin/bash
 svc_list_installed() {
-    echo -e "${CYAN}Installed services:${NC}"
+    echo -e "${SILVER}Installed services:${NC}"
     echo ""
     local found=0
     for svc_dir in "$INSTALLED_DIR"/*/; do
@@ -26,7 +26,7 @@ svc_start() {
     ensure_docker || return 1
     cd "$d"
     echo -e "${GREEN}Starting $svc...${NC}"
-    docker compose up -d 2>/dev/null || docker-compose up -d 2>/dev/null
+    docker compose up -d || docker-compose up -d
     echo -e "${GREEN}$svc started.${NC}"
 }
 
@@ -37,7 +37,7 @@ svc_stop() {
     [ ! -d "$d" ] && { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
     cd "$d"
     echo -e "${YELLOW}Stopping $svc...${NC}"
-    docker compose down 2>/dev/null || docker-compose down 2>/dev/null
+    docker compose down || docker-compose down
     echo -e "${GREEN}$svc stopped.${NC}"
 }
 
@@ -45,14 +45,14 @@ svc_status() {
     if [ -n "$1" ]; then
         [ ! -d "$INSTALLED_DIR/$1" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
         cd "$INSTALLED_DIR/$1"
-        docker compose ps 2>/dev/null || docker-compose ps 2>/dev/null
+        docker compose ps || docker-compose ps
     else
-        echo -e "${CYAN}All services:${NC}"
+        echo -e "${SILVER}All services:${NC}"
         for d in "$INSTALLED_DIR"/*/; do
             [ -d "$d" ] || continue
             echo -e "${BOLD}$(basename "$d"):${NC}"
             cd "$d"
-            docker compose ps 2>/dev/null || docker-compose ps 2>/dev/null
+            docker compose ps || docker-compose ps
             echo ""
         done
     fi
@@ -63,7 +63,7 @@ svc_logs() {
     [ -z "$svc" ] && { echo -e "${RED}Service name required.${NC}"; return 1; }
     [ ! -d "$INSTALLED_DIR/$svc" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
     cd "$INSTALLED_DIR/$svc"
-    docker compose logs -f --tail=100 2>/dev/null || docker-compose logs -f --tail=100 2>/dev/null
+    docker compose logs -f --tail=100 || docker-compose logs -f --tail=100
 }
 
 svc_remove() {
@@ -72,7 +72,7 @@ svc_remove() {
     [ ! -d "$INSTALLED_DIR/$svc" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
     cd "$INSTALLED_DIR/$svc"
     echo -e "${YELLOW}Stopping $svc...${NC}"
-    docker compose down -v 2>/dev/null || docker-compose down -v 2>/dev/null
+    docker compose down -v || docker-compose down -v
     rm -rf "$INSTALLED_DIR/$svc"
     echo -e "${GREEN}$svc removed.${NC}"
 }
@@ -105,7 +105,7 @@ svc_install() {
             marketplace_install_tool "$svc" "$image" "$port"
         else
             echo -e "${RED}No template or marketplace entry for '$svc'.${NC}"
-            echo -e "Use ${CYAN}palladium marketplace${NC} to browse available tools."
+            echo -e "Use ${SILVER}palladium marketplace${NC} to browse available tools."
             return 1
         fi
     fi
@@ -120,15 +120,15 @@ svc_launch() {
         echo -e "  ${DIM}Launch installs and starts a service in one command.${NC}"
         echo ""
         echo -e "  ${DIM}Examples:${NC}"
-        echo -e "  ${CYAN}palladium launch ollama${NC}    Install & start Ollama (local AI)"
-        echo -e "  ${CYAN}palladium launch n8n${NC}       Install & start n8n (automation)"
-        echo -e "  ${CYAN}palladium launch postgres${NC}  Install & start PostgreSQL"
+        echo -e "  ${SILVER}palladium launch ollama${NC}    Install & start Ollama (local AI)"
+        echo -e "  ${SILVER}palladium launch n8n${NC}       Install & start n8n (automation)"
+        echo -e "  ${SILVER}palladium launch postgres${NC}  Install & start PostgreSQL"
         echo ""
-        echo -e "  ${DIM}Browse all available tools: ${CYAN}palladium marketplace${NC}"
+        echo -e "  ${DIM}Browse all available tools: ${SILVER}palladium marketplace${NC}"
         return
     fi
     show_banner
-    echo -e "${CYAN}Launching ${GREEN}$svc${NC}..."
+    echo -e "${SILVER}Launching ${GREEN}$svc${NC}..."
     echo ""
     svc_install "$svc"
     if [ -d "$INSTALLED_DIR/$svc" ]; then

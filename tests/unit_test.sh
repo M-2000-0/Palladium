@@ -8,7 +8,7 @@ FAIL=0
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-CYAN='\033[0;36m'
+SILVER='\033[1;37m'
 NC='\033[0m'
 
 assert_eq() {
@@ -51,7 +51,7 @@ source "$MODULES_DIR/services.sh"
 source "$MODULES_DIR/marketplace.sh"
 source "$MODULES_DIR/wizard.sh"
 
-echo -e "${CYAN}Palladium Unit Tests${NC}"
+echo -e "${SILVER}Palladium Unit Tests${NC}"
 echo "========================================"
 
 echo ""

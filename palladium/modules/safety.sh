@@ -4,6 +4,62 @@
 MIN_STORAGE_MB=500
 WARN_STORAGE_MB=1000
 
+# Portable port check - works on Linux, macOS, Windows (Git Bash/WSL)
+port_in_use() {
+    local port="$1"
+    local host="${2:-127.0.0.1}"
+    timeout 1 bash -c "echo >/dev/tcp/${host}/${port}" 2>/dev/null
+}
+
+# Check if port is listening on all interfaces (0.0.0.0)
+port_exposed() {
+    local port="$1"
+    if command -v ss &>/dev/null; then
+        ss -tln 2>/dev/null | grep -q ":$port "
+    elif command -v netstat &>/dev/null; then
+        netstat -tln 2>/dev/null | grep -q ":$port "
+    else
+        port_in_use "$port" "0.0.0.0"
+    fi
+}
+
+# File locking for INSTALLED_DIR operations
+LOCK_DIR="${TMPDIR:-/tmp}/palladium_locks"
+mkdir -p "$LOCK_DIR"
+
+lock_acquire() {
+    local lock_name="$1"
+    local lock_file="$LOCK_DIR/${lock_name}.lock"
+    local timeout="${2:-10}"
+    local start_time=$(date +%s)
+    
+    while ! mkdir "$lock_file" 2>/dev/null; do
+        if [ $(($(date +%s) - start_time)) -ge "$timeout" ]; then
+            echo -e "${RED}  Timeout acquiring lock: $lock_name${NC}" >&2
+            return 1
+        fi
+        sleep 0.1
+    done
+    return 0
+}
+
+lock_release() {
+    local lock_name="$1"
+    local lock_file="$LOCK_DIR/${lock_name}.lock"
+    rmdir "$lock_file" 2>/dev/null
+}
+
+# Wrapper to run a command with locking
+with_lock() {
+    local lock_name="$1"
+    shift
+    lock_acquire "$lock_name" || return 1
+    "$@"
+    local ret=$?
+    lock_release "$lock_name"
+    return $ret
+}
+
 check_storage() {
     local path="${1:-.}"
     local available_mb=$(df -m "$path" 2>/dev/null | awk 'NR==2 {print $4}')
@@ -19,7 +75,7 @@ check_storage() {
         echo -e "${RED}  Need at least ${MIN_STORAGE_MB}MB free.${NC}"
         echo ""
         echo -e "  Free up space by running:"
-        echo -e "    ${CYAN}palladium cleanup${NC}"
+        echo -e "    ${SILVER}palladium cleanup${NC}"
         echo ""
         return 1
     fi
@@ -89,7 +145,7 @@ check_docker_available() {
             if [ "$(uname)" = "Darwin" ]; then
                 echo -e "  Open Docker Desktop from Applications."
             else
-                echo -e "  Try: ${CYAN}sudo service docker start${NC}"
+                echo -e "  Try: ${SILVER}sudo service docker start${NC}"
             fi
             return 1
         fi
@@ -99,7 +155,7 @@ check_docker_available() {
 }
 
 install_docker() {
-    echo -e "${CYAN}  Installing Docker...${NC}"
+    echo -e "${SILVER}  Installing Docker...${NC}"
 
     # Windows (Git Bash / WSL bash without WSL)
     if [ -n "$WINDIR" ] || [ -n "$SYSTEMROOT" ]; then
@@ -143,7 +199,7 @@ install_docker() {
             return 0
         else
             echo -e "${RED}  Failed to download Docker Desktop.${NC}"
-            echo -e "  Download manually from: ${CYAN}https://docs.docker.com/desktop/setup/install/windows-install/${NC}"
+            echo -e "  Download manually from: ${SILVER}https://docs.docker.com/desktop/setup/install/windows-install/${NC}"
             return 1
         fi
     fi
@@ -156,7 +212,7 @@ install_docker() {
             return 0
         fi
         echo -e "${RED}  Install Homebrew first, then run: brew install --cask docker${NC}"
-        echo -e "  Or download from: ${CYAN}https://docs.docker.com/desktop/setup/install/mac-install/${NC}"
+        echo -e "  Or download from: ${SILVER}https://docs.docker.com/desktop/setup/install/mac-install/${NC}"
         return 1
     fi
 
@@ -193,9 +249,9 @@ install_docker() {
 
     echo -e "${RED}  Docker installation failed.${NC}"
     if [ -n "$pm" ]; then
-        echo -e "  Try manually: ${CYAN}sudo $pm install docker${NC}"
+        echo -e "  Try manually: ${SILVER}sudo $pm install docker${NC}"
     else
-        echo -e "  See: ${CYAN}https://docs.docker.com/engine/install/${NC}"
+        echo -e "  See: ${SILVER}https://docs.docker.com/engine/install/${NC}"
     fi
     return 1
 }
@@ -206,7 +262,7 @@ pull_image_with_fallback() {
 
     echo -e "${DIM}  Pulling $image...${NC}"
 
-    if docker pull "$image" 2>/dev/null; then
+    if docker pull "$image"; then
         return 0
     fi
 
@@ -264,7 +320,7 @@ health_check() {
     done
 
     echo -e "${YELLOW}  $name may still be starting. Try opening $url in your browser.${NC}"
-    return 0
+    return 1
 }
 
 show_install_error() {
@@ -277,9 +333,9 @@ show_install_error() {
     echo ""
     echo -e "  Common fixes:"
     echo -e "    1. Check internet connection"
-    echo -e "    2. Run: ${CYAN}palladium cleanup${NC}"
-    echo -e "    3. Check logs: ${CYAN}palladium logs $svc${NC}"
-    echo -e "    4. Restart Docker: ${CYAN}sudo service docker restart${NC}"
+    echo -e "    2. Run: ${SILVER}palladium cleanup${NC}"
+    echo -e "    3. Check logs: ${SILVER}palladium logs $svc${NC}"
+    echo -e "    4. Restart Docker: ${SILVER}sudo service docker restart${NC}"
     echo ""
     if [ -n "$error" ]; then
         echo -e "  ${DIM}Error: $error${NC}"
@@ -287,11 +343,11 @@ show_install_error() {
 }
 
 cleanup_all() {
-    echo -e "${CYAN}${BOLD}  ═══ Cleanup ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Cleanup ═══${NC}"
     echo ""
 
     # Show current usage
-    echo -e "${CYAN}  Current Docker usage:${NC}"
+    echo -e "${SILVER}  Current Docker usage:${NC}"
     docker system df 2>/dev/null || echo "  (Docker not available)"
     echo ""
 
@@ -302,14 +358,14 @@ cleanup_all() {
         local name=$(basename "$svc_dir")
         cd "$svc_dir"
         docker compose down 2>/dev/null || docker-compose down 2>/dev/null
-    done
+    done || true
 
     # Prune Docker
     echo -e "${YELLOW}  Removing unused Docker images...${NC}"
-    docker image prune -f 2>/dev/null
-    docker container prune -f 2>/dev/null
-    docker volume prune -f 2>/dev/null
-    docker network prune -f 2>/dev/null
+    docker image prune -f 2>/dev/null || true
+    docker container prune -f 2>/dev/null || true
+    docker volume prune -f 2>/dev/null || true
+    docker network prune -f 2>/dev/null || true
 
     # Show freed space
     echo ""
@@ -337,7 +393,7 @@ check_existing_service() {
     # Check if port is already in use
     local port="$2"
     if [ -n "$port" ]; then
-        if ss -tlnp 2>/dev/null | grep -q ":$port " || netstat -tlnp 2>/dev/null | grep -q ":$port "; then
+        if port_in_use "$port"; then
             echo -e "${YELLOW}  Warning: Port $port is already in use.${NC}"
             if ! confirm "  Use a different port?"; then
                 return 1

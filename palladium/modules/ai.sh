@@ -3,7 +3,7 @@
 
 ai_menu() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI Toolkit ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI Toolkit ═══${NC}"
     echo ""
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}Local LLMs${NC}         Run AI models on your SSD (Ollama)"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}API Connectors${NC}     OpenAI, Claude, Gemini"
@@ -25,7 +25,7 @@ ai_menu() {
 
 ai_local_llm() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ Local LLMs (Ollama) ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Local LLMs (Ollama) ═══${NC}"
     echo ""
     echo -e "  ${DIM}Run AI models locally on your SSD. No API keys needed.${NC}"
     echo ""
@@ -160,7 +160,7 @@ ai_pull_model() {
 }
 
 ai_list_models() {
-    echo -e "${CYAN}Installed models:${NC}"
+    echo -e "${SILVER}Installed models:${NC}"
     echo ""
     docker exec ollama ollama list 2>/dev/null || echo "  Could not list models."
     press_enter
@@ -176,7 +176,7 @@ ai_open_ollama_ui() {
 
 ai_api_connector() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI API Connectors ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI API Connectors ═══${NC}"
     echo ""
     echo -e "  ${DIM}Connect to cloud AI APIs. You need API keys.${NC}"
     echo ""
@@ -214,7 +214,7 @@ ai_setup_connector() {
     local base_url="$3"
 
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ $name Connector ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ $name Connector ═══${NC}"
     echo ""
 
     local api_key=$(prompt_password "  API key")
@@ -244,7 +244,7 @@ EOF
 
 ai_rag_pipeline() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ RAG Pipeline ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ RAG Pipeline ═══${NC}"
     echo ""
     echo -e "  ${DIM}Retrieval-Augmented Generation: search your documents with AI.${NC}"
     echo ""
@@ -263,7 +263,7 @@ ai_rag_pipeline() {
 }
 
 ai_full_rag() {
-    echo -e "${CYAN}Installing full RAG pipeline...${NC}"
+    echo -e "${SILVER}Installing full RAG pipeline...${NC}"
     echo ""
 
     # Check for Ollama
@@ -290,7 +290,7 @@ ai_full_rag() {
 
 ai_agent() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI Agent Builder ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI Agent Builder ═══${NC}"
     echo ""
     echo -e "  ${DIM}Build custom AI agents with tools and memory.${NC}"
     echo ""
@@ -314,7 +314,7 @@ ai_custom() {
 
 ai_setup_apps() {
     clear 2>/dev/null || true
-    echo -e "${CYAN}${BOLD}  ═══ AI & Business Apps ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ AI & Business Apps ═══${NC}"
     echo ""
     echo -e "  ${DIM}Popular business APIs for n8n workflows.${NC}"
     echo ""

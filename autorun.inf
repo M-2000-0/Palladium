@@ -1,14 +1,12 @@
 [AutoRun]
-open=start-palladium.bat
-icon=palladium\palladium.ico
-label=Palladium Portable Server
-action=Start Palladium Server
+open=START.bat
+label=Server - Self-Hosted Control Panel
+action=Start your personal server
 
 [AutoRun.AllUsers]
-open=start-palladium.bat
-icon=palladium\palladium.ico
-label=Palladium Portable Server
-action=Start Palladium Server
+open=START.bat
+label=Server - Self-Hosted Control Panel
+action=Start your personal server
 
 [Content]
 MusicFiles=no

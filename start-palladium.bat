@@ -1,49 +1,70 @@
 @echo off
-title Palladium Portable Server
-color 0B
-mode con: cols=90 lines=30 2>nul
+title Server - Self-Hosted Control Panel
+color 0F
+mode con: cols=100 lines=35 2>nul
 
 echo.
 echo  ============================================================
-echo        __        __   _ _    _    ____    __  __  _   _   _
-echo        \ \      / /__^| ^| ^|  ^| ^|  / ___^|  ^|  \/  ^| ^| ^| ^| ^| ^|
-echo         \ \ /\ / / _ \ ^| ^|  ^| ^| ^| ^|  _   ^| ^|\  /^| ^| ^| ^| ^| ^| ^|
-echo          \ V  V /  __/ ^| ^|__^| ^|___^| ^|_^| ^|  ^| ^| \/^| ^| ^|_^| ^| ^|_^|
-echo           \_/\_/ \___^|_^|\____/^|_____^|  ^|_^|  ^|_^|  ^|\__,_^| \__,_^|
+echo     ███████  ███████  ██████  ██    ██  ███████  ██████
+echo     ██       ██       ██   ██ ██    ██ ██       ██   ██
+echo     ███████  █████    ██████  ██    ██ █████    ██████
+echo          ██  ██       ██   ██  ██  ██  ██       ██   ██
+echo     ███████  ███████  ██   ██   ████   ███████  ██   ██
 echo.
-echo     Portable Server Manager
-echo     Plug in. Power up. Host anything.
+echo     Self-host. Your way.
 echo  ============================================================
 echo.
-echo  Starting Palladium...
-echo.
+echo  Starting Server...
 
+cd /d "%~dp0..\Server"
+
+REM Find Python
+set PYTHON_CMD=
+where python >nul 2>nul
+if %errorlevel% equ 0 set PYTHON_CMD=python
+if "%PYTHON_CMD%"=="" (
+    where py >nul 2>nul
+    if %errorlevel% equ 0 set PYTHON_CMD=py
+)
+
+if not "%PYTHON_CMD%"=="" (
+    "%PYTHON_CMD%" server.py
+    goto done
+)
+
+REM No Python — try Java
+where java >nul 2>nul
+if %errorlevel% equ 0 (
+    if not exist ..\Server\Server.class javac ..\Server\Server.java 2>nul
+    if exist ..\Server\Server.class (
+        java -cp ..\Server Server
+        goto done
+    )
+)
+
+REM No Python or Java — try Git Bash as fallback
 cd /d "%~dp0palladium"
-
-REM Try Git Bash first (most compatible)
 if exist "C:\Program Files\Git\bin\bash.exe" (
     "C:\Program Files\Git\bin\bash.exe" palladium
     goto done
 )
-
-REM Fallback: any bash in PATH (WSL, etc.)
+if exist "C:\Program Files (x86)\Git\bin\bash.exe" (
+    "C:\Program Files (x86)\Git\bin\bash.exe" palladium
+    goto done
+)
 where bash >nul 2>nul
 if %errorlevel% equ 0 (
     bash palladium
     goto done
 )
-
-REM WSL direct
 where wsl >nul 2>nul
 if %errorlevel% equ 0 (
     wsl -e bash palladium
     goto done
 )
-
-REM Last resort: PowerShell
-powershell -NoProfile -ExecutionPolicy Bypass -File palladium.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File ..\palladium\palladium.ps1
 
 :done
 echo.
-echo  Palladium has stopped. You may close this window.
+echo  Server has stopped. You may close this window.
 pause
