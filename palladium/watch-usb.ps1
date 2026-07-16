@@ -6,9 +6,6 @@ param(
     [int]$PollInterval = 3
 )
 
-Add-Type -AssemblyName Microsoft.VisualBasic
-Add-Type -AssemblyName System.Windows.Forms
-
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $usbRoot = (Get-Item $scriptPath).Root.Name.TrimEnd('\')
 $markerPath = Join-Path $usbRoot $MarkerFile
@@ -23,10 +20,19 @@ while ($true) {
         "USB detected at $(Get-Date) - launching Palladium" | Out-File $traceFile -Append
 
         if (Test-Path $batPath) {
-            # Launch Palladium in a visible terminal
-            [System.Diagnostics.Process]::Start("cmd.exe", "/c `"$batPath`"") | Out-Null
+            # Launch Palladium in a visible, maximized terminal window
+            try {
+                $wshell = New-Object -ComObject WScript.Shell
+                $wshell.Run("cmd.exe /c `"$batPath`"", 3, $false)  # 3=maximized, $false=no wait
+            } catch {
+                try {
+                    $shell = New-Object -ComObject "Shell.Application"
+                    $shell.ShellExecute("cmd.exe", "/c `"$batPath`"", "", "open", 1)
+                } catch {
+                    Start-Process cmd.exe -ArgumentList "/c `"$batPath`"" -WindowStyle Maximized
+                }
+            }
 
-            # Wait for the window to appear
             Start-Sleep 3
 
             # Close any File Explorer windows showing this drive
@@ -37,16 +43,11 @@ while ($true) {
                 } | ForEach-Object { $_.Quit() }
             } catch {}
 
-            # Bring Palladium terminal to foreground
+            # Bring Palladium terminal to foreground via AppActivate
             try {
-                [Microsoft.VisualBasic.Interaction]::AppActivate("Palladium Portable Server")
-            } catch {
-                # Fallback: simulate Alt+Tab to switch windows
-                try {
-                    $wshell = New-Object -ComObject wscript.shell
-                    $wshell.SendKeys("%({TAB})")
-                } catch {}
-            }
+                $wshell = New-Object -ComObject WScript.Shell
+                $wshell.AppActivate("Palladium Portable Server")
+            } catch {}
         } else {
             "WARNING: $batPath not found" | Out-File $traceFile -Append
         }
