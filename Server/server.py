@@ -84,11 +84,12 @@ console = Console()
 
 def show_logo():
     return Panel(Align.center(Text("""
-  ███████  ███████  ██████  ██    ██  ███████  ██████  ██████
-  ██       ██       ██   ██ ██    ██ ██       ██   ██ ██   ██
-  ███████  █████    ██████  ██    ██ █████    ██████  ██████
-       ██  ██       ██   ██  ██  ██  ██       ██   ██ ██
-  ███████  ███████  ██   ██   ████   ███████  ██   ██ ██
+ ██████╗  █████╗ ██╗     ██╗      █████╗ ██████╗ ██╗██╗   ██╗███╗   ███╗
+ ██╔══██╗██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██║██║   ██║████╗ ████║
+ ██████╔╝███████║██║     ██║     ███████║██║  ██║██║██║   ██║██╔████╔██║
+ ██╔═══╝ ██╔══██║██║     ██║     ██╔══██║██║  ██║██║██║   ██║██║╚██╔╝██║
+ ██║     ██║  ██║███████╗███████╗██║  ██║██████╔╝██║╚██████╔╝██║ ╚═╝ ██║
+ ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚═╝     ╚═╝
 """, style="bold white")), border_style="dim", padding=(0,0))
 
 
@@ -192,9 +193,9 @@ def setup_wizard(palladium_home):
     console.print("  How do you want to start?\n")
 
     catalog = [
-        ("Full auto", "Install services + enter API keys + set passwords. USB plug = silent background."),
-        ("API keys + preferences", "Enter API keys now. Install services later from the menu."),
-        ("Full config wizard", "Walk through everything step by step, then show the dashboard."),
+        ("Show dashboard", "Go straight to the menu. Install services anytime."),
+        ("Add API keys", "Enter API keys for AI services, then show dashboard."),
+        ("Full auto", "Install starter services + enter API keys. USB plug = silent background."),
     ]
     for i, (title, desc) in enumerate(catalog):
         console.print(f"  [bold white]{i+1}[/]  {title}")
@@ -203,15 +204,14 @@ def setup_wizard(palladium_home):
     ch = Prompt.ask("  Choose", choices=["1", "2", "3"], default="1")
     setup_mode = int(ch)
 
-    cfg = {"setup_mode": ch, "autorun_mode": "tui"}
+    cfg = {"setup_mode": ch, "autorun_mode": "tui", "api_keys_configured": "false"}
 
-    # Always prompt for API keys
-    has_keys = load_api_keys(palladium_home)
-    if not has_keys:
-        console.print("\n  [bold]Let's add your API keys.[/]  [dim](Skip any you don't need)[/]")
+    if setup_mode >= 2:
+        # Prompt for API keys
+        console.print("\n  [bold]Add API keys (press Enter to skip each)[/]")
         keys = {}
         for var_name, label in API_KEY_NAMES:
-            val = Prompt.ask(f"  {label} key (optional)", password=True, default="")
+            val = Prompt.ask(f"  {label} key [dim](optional)[/]", password=True, default="")
             if val:
                 keys[var_name] = val
         if keys:
@@ -219,6 +219,14 @@ def setup_wizard(palladium_home):
             cfg["api_keys_configured"] = "true"
 
     if setup_mode == 1:
+        # Show dashboard: nothing else to do
+        console.print("\n  [green]Ready! Install services anytime from the menu.[/]")
+
+    elif setup_mode == 2:
+        # API keys: done, show TUI
+        console.print("\n  [green]API keys saved. Install services anytime from the menu.[/]")
+
+    elif setup_mode == 3:
         # Full auto: install default services, go background
         console.print("\n  [bold]Installing starter services...[/]")
         services_to_install = ["n8n", "postgres"]
@@ -231,15 +239,7 @@ def setup_wizard(palladium_home):
         cfg["autorun_mode"] = "background"
         console.print("\n  [green]All set! On USB plug-in, your server starts silently.[/]")
 
-    elif setup_mode == 2:
-        # API keys + preferences: done, show TUI
-        console.print("\n  [green]API keys saved. Install services anytime from the menu.[/]")
-
-    elif setup_mode == 3:
-        # Full config: ask about autorun preference
-        pass
-
-    # Ask autorun preference (for modes 2 and 3, or let mode 3 override)
+    # Ask autorun preference (modes 2 and 3)
     if setup_mode in (2, 3):
         console.print("\n  [bold]When you plug in the USB:[/]\n")
         console.print("  [1] Show the dashboard (you see the menu)")

@@ -1,5 +1,5 @@
 @echo off
-title Server
+title Palladium - Portable Server Manager
 cd /d "%~dp0"
 
 :: ── Create desktop shortcut on first run ──
