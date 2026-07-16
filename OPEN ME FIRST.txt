@@ -1,0 +1,18 @@
+███  SERVER — Self-Hosted Control Panel  ███
+
+HOW TO START:
+
+  Windows:  Double-click START.bat
+  macOS:    Double-click start-palladium.command
+  Linux:    Double-click start-palladium.sh
+           (or run: bash start-palladium.sh)
+
+That's it. No install needed — just Python or Java.
+
+WHAT IT DOES:
+  • Installs Docker + your chosen services (n8n, Postgres, Ollama, etc.)
+  • Runs entirely from this USB — your data goes where you go
+  • No cloud, no subscription, no lock-in
+
+NEED HELP?
+  https://github.com/M-2000-0/Palladium
