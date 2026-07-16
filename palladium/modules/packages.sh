@@ -101,3 +101,109 @@ palladium_install() {
             ;;
     esac
 }
+
+install_tools() {
+    local os
+    os=$(detect_os)
+    local all_ok=true
+
+    echo -e "${CYAN}${BOLD}  ═══ Installing Essential Tools ═══${NC}"
+    echo ""
+    echo -e "  ${DIM}Palladium will install the following tools automatically:${NC}"
+    echo ""
+    echo -e "  ${GREEN}•${NC}  Git         ${DIM}Version control${NC}"
+    echo -e "  ${GREEN}•${NC}  Docker      ${DIM}Container runtime${NC}"
+    echo -e "  ${GREEN}•${NC}  curl        ${DIM}HTTP client${NC}"
+    echo -e "  ${GREEN}•${NC}  wget        ${DIM}Download tool${NC}"
+    echo -e "  ${GREEN}•${NC}  Python      ${DIM}Scripting & AI tools${NC}"
+    echo -e "  ${GREEN}•${NC}  Node.js     ${DIM}JavaScript runtime${NC}"
+    echo ""
+    if ! confirm "  Proceed with installation?"; then
+        echo -e "  ${YELLOW}Cancelled.${NC}"
+        return 1
+    fi
+    echo ""
+
+    case "$os" in
+        windows)
+            if ! command -v winget &> /dev/null; then
+                echo -e "${YELLOW}  winget not available. Install from Microsoft Store first.${NC}"
+                echo -e "  ${DIM}https://www.microsoft.com/p/app-installer/9nblggh4nns1${NC}"
+                return 1
+            fi
+
+            echo -e "${CYAN}  Step 1/5: Installing Git...${NC}"
+            winget install --exact --id Git.Git --silent --accept-package-agreements 2>&1 && \
+                echo -e "${GREEN}  ✓ Git installed${NC}" || { echo -e "${RED}  ✗ Git failed${NC}"; all_ok=false; }
+
+            echo ""
+            echo -e "${CYAN}  Step 2/5: Installing Docker Desktop...${NC}"
+            if find_docker_cli &> /dev/null; then
+                echo -e "${GREEN}  ✓ Docker already installed${NC}"
+            else
+                winget install --exact --id Docker.DockerDesktop --silent --accept-package-agreements 2>&1 && \
+                    echo -e "${GREEN}  ✓ Docker Desktop installed${NC}" || { echo -e "${RED}  ✗ Docker failed${NC}"; all_ok=false; }
+            fi
+
+            echo ""
+            echo -e "${CYAN}  Step 3/5: Installing Python...${NC}"
+            winget install --exact --id Python.Python.3.12 --silent --accept-package-agreements 2>&1 && \
+                echo -e "${GREEN}  ✓ Python installed${NC}" || { echo -e "${RED}  ✗ Python failed${NC}"; all_ok=false; }
+
+            echo ""
+            echo -e "${CYAN}  Step 4/5: Installing Node.js...${NC}"
+            winget install --exact --id OpenJS.NodeJS.LTS --silent --accept-package-agreements 2>&1 && \
+                echo -e "${GREEN}  ✓ Node.js installed${NC}" || { echo -e "${RED}  ✗ Node.js failed${NC}"; all_ok=false; }
+
+            echo ""
+            echo -e "${CYAN}  Step 5/5: Installing VS Code...${NC}"
+            winget install --exact --id Microsoft.VisualStudioCode --silent --accept-package-agreements 2>&1 && \
+                echo -e "${GREEN}  ✓ VS Code installed${NC}" || { echo -e "${RED}  ✗ VS Code failed${NC}"; all_ok=false; }
+            ;;
+
+        macos)
+            if ! command -v brew &> /dev/null; then
+                echo -e "${YELLOW}  Installing Homebrew first...${NC}"
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            fi
+
+            echo -e "${CYAN}  Installing tools via Homebrew...${NC}"
+            brew install git curl wget python node 2>&1 || all_ok=false
+            brew install --cask docker visual-studio-code 2>&1 || all_ok=false
+            ;;
+
+        linux)
+            local pm=""
+            local update_cmd="" install_cmd=""
+            if command -v apt &> /dev/null; then
+                pm="apt"; update_cmd="sudo apt update -qq"; install_cmd="sudo apt install -y -qq"
+            elif command -v dnf &> /dev/null; then
+                pm="dnf"; update_cmd="sudo dnf check-update -q"; install_cmd="sudo dnf install -y"
+            elif command -v yum &> /dev/null; then
+                pm="yum"; update_cmd="sudo yum check-update -q"; install_cmd="sudo yum install -y"
+            elif command -v pacman &> /dev/null; then
+                pm="pacman"; update_cmd="sudo pacman -Sy"; install_cmd="sudo pacman -S --noconfirm"
+            fi
+
+            if [ -n "$pm" ]; then
+                echo -e "${CYAN}  Updating package list...${NC}"
+                eval "$update_cmd" 2>&1 || true
+                echo ""
+                echo -e "${CYAN}  Installing tools...${NC}"
+                eval "$install_cmd git curl wget python3 python3-pip nodejs build-essential" 2>&1 || all_ok=false
+            else
+                echo -e "${RED}  No supported package manager found.${NC}"
+                all_ok=false
+            fi
+            ;;
+    esac
+
+    echo ""
+    if $all_ok; then
+        echo -e "${GREEN}${BOLD}  All tools installed successfully!${NC}"
+        echo -e "  ${DIM}Some tools may require a terminal restart.${NC}"
+    else
+        echo -e "${YELLOW}  Some tools failed. Check messages above.${NC}"
+    fi
+    press_enter
+}

@@ -105,6 +105,7 @@ case "${1:-}" in
     clone)       shift; clone_menu ;;
     drive)       shift; show_usb_info ;;
     install-to)  shift; install_to_drive "$@" ;;
+    install-tools|tools) install_tools ;;
     help)        show_help ;;
     *)           main_menu ;;
 esac
