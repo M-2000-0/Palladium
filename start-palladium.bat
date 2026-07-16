@@ -16,7 +16,7 @@ echo  ============================================================
 echo.
 echo  Starting Server...
 
-cd /d "%~dp0..\Server"
+cd /d "%~dp0Server"
 
 REM Find Python
 set PYTHON_CMD=
@@ -35,9 +35,9 @@ if not "%PYTHON_CMD%"=="" (
 REM No Python — try Java
 where java >nul 2>nul
 if %errorlevel% equ 0 (
-    if not exist ..\Server\Server.class javac ..\Server\Server.java 2>nul
-    if exist ..\Server\Server.class (
-        java -cp ..\Server Server
+    if not exist Server\Server.class javac Server\Server.java 2>nul
+    if exist Server\Server.class (
+        java -cp Server Server
         goto done
     )
 )
