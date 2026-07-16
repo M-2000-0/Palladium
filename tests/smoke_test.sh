@@ -17,6 +17,6 @@ run_test() {
 
 run_test "launch shows usage" "launch" "Usage"
 run_test "help shows commands" "help" "Commands"
-run_test "menu has Quick Start" "" "Quick Start"
+run_test "menu shows services" "" "Pre-built stacks"
 
 echo "=== Done ==="

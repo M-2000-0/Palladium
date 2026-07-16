@@ -38,10 +38,10 @@ secrets_manager() {
         echo ""
         local master=$(prompt_password "  Create master password")
         [ -z "$master" ] && return
-        echo "$master" | openssl enc -aes-256-cbc -salt -out "$SECRETS_FILE" 2>/dev/null <<< ""
+        echo "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -out "$SECRETS_FILE" 2>/dev/null <<< ""
         echo "# Palladium Secrets Vault" > /tmp/secrets_plain
         echo "# Master: $master" >> /tmp/secrets_plain
-        cat /tmp/secrets_plain | openssl enc -aes-256-cbc -salt -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
+        cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
         rm -f /tmp/secrets_plain
         chmod 600 "$SECRETS_FILE"
         echo -e "${GREEN}Vault created!${NC}"
@@ -71,9 +71,9 @@ secrets_add() {
     [ -z "$key" ] || [ -z "$value" ] && return
 
     # Decrypt, add, re-encrypt
-    openssl enc -aes-256-cbc -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null > /tmp/secrets_plain
+    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null > /tmp/secrets_plain
     echo "$key=$value" >> /tmp/secrets_plain
-    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -salt -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
+    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
     rm -f /tmp/secrets_plain
     echo -e "${GREEN}Secret added: $key${NC}"
     press_enter
@@ -81,7 +81,7 @@ secrets_add() {
 
 secrets_list() {
     local master=$(prompt_password "  Master password")
-    openssl enc -aes-256-cbc -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^#" | while read -r line; do
+    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^#" | while read -r line; do
         local key=$(echo "$line" | cut -d= -f1)
         echo -e "  ${GREEN}$key${NC}"
     done
@@ -91,7 +91,7 @@ secrets_list() {
 secrets_get() {
     local master=$(prompt_password "  Master password")
     local key=$(prompt_value "  Secret name")
-    local value=$(openssl enc -aes-256-cbc -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep "^$key=" | cut -d= -f2-)
+    local value=$(openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep "^$key=" | cut -d= -f2-)
     if [ -n "$value" ]; then
         echo -e "  ${GREEN}$key${NC} = ${DIM}$value${NC}"
     else
@@ -103,8 +103,8 @@ secrets_get() {
 secrets_delete() {
     local master=$(prompt_password "  Master password")
     local key=$(prompt_value "  Secret name to delete")
-    openssl enc -aes-256-cbc -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^$key=" > /tmp/secrets_plain
-    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -salt -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
+    openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -salt -pass "pass:$master" -in "$SECRETS_FILE" 2>/dev/null | grep -v "^$key=" > /tmp/secrets_plain
+    cat /tmp/secrets_plain | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass "pass:$master" -out "$SECRETS_FILE" 2>/dev/null
     rm -f /tmp/secrets_plain
     echo -e "${GREEN}Secret deleted.${NC}"
     press_enter

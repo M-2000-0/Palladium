@@ -1,8 +1,8 @@
 #!/bin/bash
 # palladium - Universal Portable Server Manager
-
 set -e
 
+PALLADIUM_VERSION="$(cat "$(cd "$(dirname "$0")" && pwd)/../VERSION" 2>/dev/null || echo "0.0.0")"
 PALLADIUM_HOME="$(cd "$(dirname "$0")" && pwd)"
 MODULES_DIR="$PALLADIUM_HOME/modules"
 SERVICES_DIR="$PALLADIUM_HOME/services"
@@ -10,6 +10,30 @@ STACK_DIR="$PALLADIUM_HOME/stacks"
 MARKETPLACE_DIR="$PALLADIUM_HOME/marketplace"
 DATA_DIR="$PALLADIUM_HOME/data"
 INSTALLED_DIR="$DATA_DIR/installed"
+
+# Process flags before anything else
+for arg in "$@"; do
+    case "$arg" in
+        --version|-v) echo "Palladium v$PALLADIUM_VERSION"; exit 0 ;;
+        --debug|-d) set -x ;;
+    esac
+done
+
+log_file=""
+debug_mode=false
+for arg in "$@"; do
+    case "$arg" in
+        --debug|-d) debug_mode=true ;;
+        --log-file=*) log_file="${arg#*=}" ;;
+    esac
+done
+
+log_message() {
+    local level="${2:-INFO}"
+    local msg="[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $1"
+    [ -n "$log_file" ] && echo "$msg" >> "$log_file"
+    $debug_mode && echo -e "\e[2m$msg\e[0m" >&2
+}
 
 source "$MODULES_DIR/core.sh"
 source "$MODULES_DIR/safety.sh"
@@ -79,6 +103,8 @@ fi
 case "${1:-}" in
     setup)       "$PALLADIUM_HOME/../setup.sh" "$@" ;;
     setup-autorun) shift; autorun_setup "$@" ;;
+    --version|-v) echo "Palladium v$PALLADIUM_VERSION" ;;
+    uninstall)   "$PALLADIUM_HOME/../uninstall.sh" ;;
     start)       shift; svc_start "$@" ;;
     stop)        shift; svc_stop "$@" ;;
     status)      shift; svc_status "$@" ;;
