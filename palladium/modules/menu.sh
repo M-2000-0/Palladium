@@ -79,10 +79,11 @@ main_menu() {
         right=$(build_menu_block "$docker_ok" "$running" "$drive_label")
 
         # Display side by side using paste + while loop
-        local banner_width=64
+        local banner_width=66
         paste -d $'\x1f' <(echo -e "$left") <(echo -e "$right") | while IFS=$'\x1f' read -r lline rline; do
             local clean=$(echo -e "$lline" | sed 's/\x1b\[[0-9;]*m//g')
-            local pad=$((banner_width - ${#clean}))
+            local chars=$(echo -n "$clean" | wc -m)
+            local pad=$((banner_width - chars))
             [ "$pad" -lt 0 ] && pad=0
             printf "%s%*s  %s\n" "$lline" "$pad" "" "$rline"
         done

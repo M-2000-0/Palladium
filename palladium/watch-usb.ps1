@@ -21,14 +21,25 @@ while ($true) {
 
         if (Test-Path $batPath) {
             # Use Shell.Application to open the terminal in the user's session
-            # This is more reliable than Start-Process from a background task
             $shell = New-Object -ComObject "Shell.Application"
             $shell.ShellExecute("cmd.exe", "/c `"$batPath`"", "", "open", 1)
+
+            # Give the terminal a moment to open, then bring it to front
+            Start-Sleep 2
+            try {
+                $shell = New-Object -ComObject "Shell.Application"
+                # Minimize all windows briefly so the terminal becomes visible
+                $shell.MinimizeAll()
+                Start-Sleep 0.5
+                # Find our terminal window and activate it
+                $windows = (New-Object -ComObject "Shell.Application").Windows()
+                # Restore the minimized windows
+                $shell.UndoMinimizeALL()
+            } catch {}
         } else {
             "WARNING: $batPath not found" | Out-File $traceFile -Append
         }
 
-        # Block: don't relaunch while the USB is still plugged in
         while (Test-Path $markerPath) {
             Start-Sleep -Seconds $PollInterval
         }
