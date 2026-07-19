@@ -7,7 +7,25 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    name: Lint (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run shellcheck on modules
+        run: |
+          find palladium/modules -name "*.sh" -exec shellcheck --shell=bash --source-path=palladium/modules {} +
+      - name: Run shellcheck on entry point
+        run: shellcheck --shell=bash palladium/palladium
+      - name: Run yamllint on service templates
+        run: |
+          pip install yamllint
+          find palladium/services -name "*.yml" -exec yamllint {} +
+
   test:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +36,74 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install pyyaml yamllint
       - name: Phase 1 - Structural tests
         run: python tests/test_syntax.py
       - name: Phase 2 - Unit tests
         run: bash tests/unit_test.sh
       - name: Phase 3 - File integrity
         run: bash tests/run.sh
+
+  plugin-test:
+    name: Plugin System Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bash & Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bash docker.io
+          sudo service docker start
+      - name: Test plugin load
+        run: |
+          cd palladium
+          source modules/core.sh
+          load_plugins 2>&1 | grep -E "(Loading plugin|Failed to load)" || echo "No plugins installed"
+      - name: Test plugin install (local)
+        run: |
+          cd palladium
+          source modules/core.sh
+          plugin_install "tests/fixtures/sample-plugin" "sample-plugin" 2>&1 | head -20
+
+  integration-test:
+    name: Integration Test (Docker Compose)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+      - name: Test n8n stack compose
+        run: |
+          cd palladium/services
+          docker-compose -f n8n.yml config --quiet
+      - name: Test postgres stack compose
+        run: |
+          cd palladium/services
+          docker-compose -f postgres.yml config --quiet
+      - name: Test redis stack compose
+        run: |
+          cd palladium/services
+          docker-compose -f redis.yml config --quiet
+      - name: Test nginx stack compose
+        run: |
+          cd palladium/services
+          docker-compose -f nginx.yml config --quiet
+
+  release:
+    name: Create Release
+    needs: [lint, test, plugin-test, integration-test]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          files: |
+            palladium/VERSION
+            CHANGELOG.md

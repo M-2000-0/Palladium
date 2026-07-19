@@ -252,3 +252,253 @@ delete_backup() {
         echo -e "${GREEN}Backup deleted.${NC}"
     fi
 }
+
+# ============================================
+# Backup/Clone v2 - Advanced Features
+# ============================================
+
+# Incremental backup using rsync
+backup_incremental() {
+    local svc="$1"
+    local target_dir="$2"
+    
+    [ -z "$svc" ] && { echo "Usage: backup_incremental <service> <target_dir>"; return 1; }
+    [ -z "$target_dir" ] && { echo "Usage: backup_incremental <service> <target_dir>"; return 1; }
+    
+    local svc_dir="$INSTALLED_DIR/$svc"
+    [ -d "$svc_dir" ] || { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
+    
+    mkdir -p "$target_dir"
+    
+    echo -e "${YELLOW}Running incremental backup for $svc...${NC}"
+    
+    # Use rsync for incremental backup
+    if command -v rsync &>/dev/null; then
+        rsync -av --delete \
+            --exclude='*/node_modules' \
+            --exclude='*/.git' \
+            --exclude='*/tmp/*' \
+            --exclude='*/cache/*' \
+            "$svc_dir/" "$target_dir/$svc/" 2>/dev/null
+        echo -e "${GREEN}Incremental backup complete: $target_dir/$svc${NC}"
+    else
+        echo -e "${RED}rsync not installed. Install rsync for incremental backups.${NC}"
+        return 1
+    fi
+}
+
+# Restic-based backup (encrypted, deduplicated, incremental)
+backup_restic() {
+    local svc="$1"
+    local repo="$2"
+    local password="$3"
+    
+    [ -z "$svc" ] && { echo "Usage: backup_restic <service> <repo> [password]"; return 1; }
+    [ -z "$repo" ] && { echo "Usage: backup_restic <service> <repo> [password]"; return 1; }
+    
+    local svc_dir="$INSTALLED_DIR/$svc"
+    [ -d "$svc_dir" ] || { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
+    
+    if ! command -v restic &>/dev/null; then
+        echo -e "${RED}restic not installed. Install: https://restic.net${NC}"
+        return 1
+    fi
+    
+    export RESTIC_REPOSITORY="$repo"
+    export RESTIC_PASSWORD="${password:-$(prompt_password "  Restic repository password")}"
+    
+    # Initialize repo if needed
+    restic snapshots &>/dev/null || restic init
+    
+    echo -e "${YELLOW}Backing up $svc to restic repo...${NC}"
+    restic backup "$svc_dir" --tag "palladium,$svc,$(date +%Y%m%d)" --verbose
+    
+    echo -e "${GREEN}Restic backup complete.${NC}"
+}
+
+# Rclone-based cloud backup (S3, Google Drive, Azure, etc.)
+backup_rclone() {
+    local svc="$1"
+    local remote="$2"
+    local remote_path="$3"
+    
+    [ -z "$svc" ] && { echo "Usage: backup_rclone <service> <remote> <remote_path>"; return 1; }
+    [ -z "$remote" ] && { echo "Usage: backup_rclone <service> <remote> <remote_path>"; return 1; }
+    [ -z "$remote_path" ] && { echo "Usage: backup_rclone <service> <remote> <remote_path>"; return 1; }
+    
+    local svc_dir="$INSTALLED_DIR/$svc"
+    [ -d "$svc_dir" ] || { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
+    
+    if ! command -v rclone &>/dev/null; then
+        echo -e "${RED}rclone not installed. Install: https://rclone.org${NC}"
+        return 1
+    fi
+    
+    # Check if remote is configured
+    if ! rclone listremotes | grep -q "^${remote}:$"; then
+        echo -e "${RED}Remote '$remote' not configured. Run 'rclone config' first.${NC}"
+        return 1
+    fi
+    
+    echo -e "${YELLOW}Syncing $svc to $remote:$remote_path...${NC}"
+    rclone sync "$svc_dir" "$remote:$remote_path/$svc" \
+        --progress \
+        --exclude "/data/postgres/**" \
+        --exclude "/data/redis/**" \
+        --exclude "*.log" \
+        --exclude "tmp/**"
+    
+    echo -e "${GREEN}Rclone sync complete.${NC}"
+}
+
+# Encrypted backup using age (modern encryption)
+backup_encrypted() {
+    local svc="$1"
+    local output="$2"
+    local key_file="$3"
+    
+    [ -z "$svc" ] && { echo "Usage: backup_encrypted <service> <output.tar.gz.age> [key_file]"; return 1; }
+    [ -z "$output" ] && { echo "Usage: backup_encrypted <service> <output.tar.gz.age> [key_file]"; return 1; }
+    
+    local svc_dir="$INSTALLED_DIR/$svc"
+    [ -d "$svc_dir" ] || { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
+    
+    if ! command -v age &>/dev/null; then
+        echo -e "${RED}age not installed. Install: https://github.com/FiloSottile/age${NC}"
+        return 1
+    fi
+    
+    local key=""
+    if [ -n "$key_file" ] && [ -f "$key_file" ]; then
+        key="-r $(cat "$key_file")"
+    else
+        key="$(prompt_password "  Encryption password" | age -p)"
+    fi
+    
+    echo -e "${YELLOW}Creating encrypted backup...${NC}"
+    
+    tar czf - -C "$INSTALLED_DIR" "$svc" \
+        --exclude='*/data/postgres/*' \
+        --exclude='*/data/redis/*' 2>/dev/null | \
+    age -e $key > "$output"
+    
+    echo -e "${GREEN}Encrypted backup saved: $output${NC}"
+}
+
+# Decrypt and restore encrypted backup
+restore_encrypted() {
+    local input="$1"
+    local key_file="$2"
+    
+    [ -z "$input" ] && { echo "Usage: restore_encrypted <input.tar.gz.age> [key_file]"; return 1; }
+    [ -f "$input" ] || { echo -e "${RED}File not found: $input${NC}"; return 1; }
+    
+    if ! command -v age &>/dev/null; then
+        echo -e "${RED}age not installed.${NC}"
+        return 1
+    fi
+    
+    local key=""
+    if [ -n "$key_file" ] && [ -f "$key_file" ]; then
+        key="-i $key_file"
+    else
+        key="$(prompt_password "  Decryption password")"
+    fi
+    
+    echo -e "${YELLOW}Decrypting and restoring...${NC}"
+    
+    age -d $key "$input" | tar xzf - -C "$INSTALLED_DIR"
+    
+    echo -e "${GREEN}Encrypted backup restored.${NC}"
+}
+
+# Scheduled backup management
+backup_schedule() {
+    clear 2>/dev/null || true
+    echo -e "${SILVER}${BOLD}  ═══ Scheduled Backups ═══${NC}"
+    echo ""
+    
+    local schedule_file="$DATA_DIR/backup-schedule.conf"
+    mkdir -p "$(dirname "$schedule_file")"
+    
+    echo -e "  ${BOLD}[1]${NC}  ${GREEN}Add schedule${NC}"
+    echo -e "  ${BOLD}[2]${NC}  ${GREEN}List schedules${NC}"
+    echo -e "  ${BOLD}[3]${NC}  ${GREEN}Remove schedule${NC}"
+    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Run schedule now${NC}"
+    echo -e "  ${BOLD}[0]${NC}  Back"
+    echo ""
+    read -p "  Select: " choice
+    
+    case $choice in
+        1)
+            local name=$(prompt_value "  Schedule name")
+            local services=$(prompt_value "  Services (comma-separated, 'all' for all)")
+            local method=$(prompt_value "  Method (tar/restic/rclone/encrypted)" "tar")
+            local target=$(prompt_value "  Target (path/repo/remote:path)")
+            local schedule=$(prompt_value "  Cron schedule (e.g. '0 2 * * *' for daily 2AM)" "0 2 * * *")
+            local encrypt=$(prompt_value "  Encrypt? (y/n)" "n")
+            
+            echo "$name|$services|$method|$target|$schedule|$encrypt" >> "$schedule_file"
+            echo -e "${GREEN}Schedule added.${NC}"
+            echo "Add to crontab: $schedule $PALLADIUM_HOME/palladium backup-run-schedule $name"
+            ;;
+        2)
+            echo -e "${SILVER}Scheduled backups:${NC}"
+            [ -f "$schedule_file" ] && cat "$schedule_file" | while IFS='|' read -r name services method target schedule encrypt; do
+                echo -e "  ${GREEN}$name${NC} - $services via $method to $target [$schedule] ${encrypt}"
+            done || echo "  (none)"
+            ;;
+        3)
+            local name=$(prompt_value "  Schedule name to remove")
+            sed -i "/^$name|/d" "$schedule_file" 2>/dev/null
+            echo -e "${GREEN}Schedule removed.${NC}"
+            ;;
+        4)
+            local name=$(prompt_value "  Schedule name to run")
+            backup_run_schedule "$name"
+            ;;
+        0) return ;;
+    esac
+    press_enter
+}
+
+# Run a specific scheduled backup
+backup_run_schedule() {
+    local name="$1"
+    local schedule_file="$DATA_DIR/backup-schedule.conf"
+    
+    [ -z "$name" ] && { echo "Usage: backup_run_schedule <name>"; return 1; }
+    [ -f "$schedule_file" ] || { echo -e "${RED}No schedules found.${NC}"; return 1; }
+    
+    local line=$(grep "^$name|" "$schedule_file")
+    [ -z "$line" ] && { echo -e "${RED}Schedule not found: $name${NC}"; return 1; }
+    
+    IFS='|' read -r _ services method target schedule encrypt <<< "$line"
+    
+    echo -e "${YELLOW}Running scheduled backup: $name${NC}"
+    
+    if [ "$services" = "all" ]; then
+        local svc_list=$(ls "$INSTALLED_DIR" 2>/dev/null)
+    else
+        local svc_list=$(echo "$services" | tr ',' ' ')
+    fi
+    
+    for svc in $svc_list; do
+        case $method in
+            tar)
+                backup_single "$svc"
+                ;;
+            restic)
+                backup_restic "$svc" "$target"
+                ;;
+            rclone)
+                backup_rclone "$svc" $(echo "$target" | cut -d: -f1) $(echo "$target" | cut -d: -f2-)
+                ;;
+            encrypted)
+                backup_encrypted "$svc" "$target"
+                ;;
+        esac
+    done
+    
+    echo -e "${GREEN}Scheduled backup complete.${NC}"
+}

@@ -319,7 +319,6 @@ wizard_custom() {
         mkdir -p \"$target/data\"
         
         cat > \"$target/docker-compose.yml\" << COMPOSE
-version: \"3.8\"
 services:
   $container:
     image: $image

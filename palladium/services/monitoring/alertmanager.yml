@@ -1,0 +1,61 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: '${SMTP_HOST:-}'
+  smtp_from: '${SMTP_FROM:-alertmanager@palladium}'
+  smtp_auth_username: '${SMTP_USER:-}'
+  smtp_auth_password: '${SMTP_PASS:-}'
+  smtp_require_tls: true
+
+route:
+  group_by: ['alertname', 'job', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      repeat_interval: 1h
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 30s
+      repeat_interval: 4h
+
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: '${ALERT_EMAIL:-admin@localhost}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://host.docker.internal:5000/webhook'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL:-admin@localhost}'
+        send_resolved: true
+        headers:
+          Subject: '[CRITICAL] Palladium Alert: {{ .GroupLabels.alertname }}'
+    telegram_configs:
+      - api_url: 'https://api.telegram.org'
+        bot_token: '${TELEGRAM_BOT_TOKEN:-}'
+        chat_id: '${TELEGRAM_CHAT_ID:-}'
+        send_resolved: true
+        parse_mode: 'Markdown'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: '${ALERT_EMAIL:-admin@localhost}'
+        send_resolved: true
+        headers:
+          Subject: '[WARNING] Palladium Alert: {{ .GroupLabels.alertname }}'
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']

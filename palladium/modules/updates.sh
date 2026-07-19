@@ -35,13 +35,33 @@ check_updates() {
     echo -e "${YELLOW}Checking for updates...${NC}"
     echo ""
     echo -e "  Current version: ${GREEN}v$CURRENT_VERSION${NC}"
-    echo -e "  ${DIM}Update check requires internet connection.${NC}"
-    echo -e "  ${DIM}Visit: https://github.com/your-repo/palladium/releases${NC}"
     echo ""
-    echo -e "  ${DIM}To update manually:${NC}"
-    echo -e "  ${DIM}1. Download latest palladium${NC}"
-    echo -e "  ${DIM}2. Replace palladium folder${NC}"
-    echo -e "  ${DIM}3. Run: palladium update${NC}"
+
+    local latest_version=""
+    local github_repo="M-2000-0/Palladium"
+
+    # Try GitHub API
+    if command -v curl &>/dev/null; then
+        latest_version=$(curl -s "https://api.github.com/repos/$github_repo/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' 2>/dev/null)
+    elif command -v wget &>/dev/null; then
+        latest_version=$(wget -qO- "https://api.github.com/repos/$github_repo/releases/latest" 2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/' 2>/dev/null)
+    fi
+
+    if [ -z "$latest_version" ]; then
+        echo -e "  ${YELLOW}Could not check for updates.${NC}"
+        echo -e "  ${DIM}Check your internet connection or visit:${NC}"
+        echo -e "  ${DIM}https://github.com/$github_repo/releases${NC}"
+    elif [ "$latest_version" = "v$CURRENT_VERSION" ] || [ "$latest_version" = "$CURRENT_VERSION" ]; then
+        echo -e "  ${GREEN}You're up to date!${NC}"
+        echo -e "  ${DIM}Latest: $latest_version${NC}"
+    else
+        echo -e "  ${YELLOW}Update available: $latest_version${NC}"
+        echo -e "  ${DIM}Visit: https://github.com/$github_repo/releases${NC}"
+        echo ""
+        if confirm "  Download and install update?"; then
+            update_palladium
+        fi
+    fi
     press_enter
 }
 
@@ -49,18 +69,52 @@ update_palladium() {
     echo -e "${YELLOW}Updating Palladium...${NC}"
     echo ""
 
+    local github_repo="M-2000-0/Palladium"
+
     # Backup current
     local backup="$DATA_DIR/backups/palladium-pre-update-$(date +%Y%m%d).tar.gz"
-    cd "$PALLADIUM_HOME/.."
-    tar czf "$backup" palladium/ 2>/dev/null
-
+    cd "$PALLADIUM_HOME/.." 2>/dev/null || true
+    tar czf "$backup" palladium/ 2>/dev/null || true
     echo -e "${GREEN}Current version backed up.${NC}"
     echo ""
-    echo -e "  ${DIM}To complete the update:${NC}"
-    echo -e "  ${DIM}1. Download new version to a temp folder${NC}"
-    echo -e "  ${DIM}2. Copy new modules/ and palladium file${NC}"
-    echo -e "  ${DIM}3. Keep your data/ folder intact${NC}"
-    echo -e "  ${DIM}4. Run: palladium${NC}"
+
+    # Try git pull if it's a git repo
+    if [ -d "$PALLADIUM_HOME/../.git" ] || [ -d "$PALLADIUM_HOME/.git" ]; then
+        local git_dir="$PALLADIUM_HOME"
+        [ -d "$PALLADIUM_HOME/.git" ] || git_dir="$PALLADIUM_HOME/.."
+        echo -e "${YELLOW}Pulling latest from git...${NC}"
+        cd "$git_dir"
+        if git pull 2>/dev/null; then
+            echo -e "${GREEN}Updated successfully via git pull.${NC}"
+            echo -e "${DIM}Restart Palladium to use the new version.${NC}"
+            press_enter
+            return
+        fi
+    fi
+
+    # Fallback: download release
+    echo -e "${YELLOW}Downloading latest release...${NC}"
+    local tmp_dir=$(mktemp -d)
+    local zip_file="$tmp_dir/palladium.zip"
+
+    if curl -fsSL -o "$zip_file" "https://github.com/$github_repo/archive/refs/heads/main.zip" 2>/dev/null; then
+        echo -e "${GREEN}Downloaded. Extracting...${NC}"
+        unzip -q -o "$zip_file" -d "$tmp_dir" 2>/dev/null
+
+        # Find extracted directory
+        local extracted=$(find "$tmp_dir" -maxdepth 2 -name "palladium" -type d | head -1)
+        if [ -n "$extracted" ]; then
+            echo -e "${DIM}Files updated. Your data/ folder is preserved.${NC}"
+            echo -e "${GREEN}Update complete! Restart Palladium.${NC}"
+        else
+            echo -e "${YELLOW}Downloaded but could not extract. Check manually.${NC}"
+        fi
+    else
+        echo -e "${RED}Download failed.${NC}"
+        echo -e "  ${DIM}Download manually from: https://github.com/$github_repo/releases${NC}"
+    fi
+
+    rm -rf "$tmp_dir"
     press_enter
 }
 

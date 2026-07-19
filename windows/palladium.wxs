@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Palladium" Language="1033" Version="1.1.0" Manufacturer="Palladium Team" UpgradeCode="PUT-GUID-HERE">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Palladium is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="Palladium" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+    </Feature>
+
+    <!-- Install to Program Files -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="Palladium" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Palladium" />
+      </Directory>
+    </Directory>
+
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Main executable -->
+      <Component Id="MainExe" Guid="PUT-GUID-HERE">
+        <File Id="palladium.exe" Source="..\build\palladium.exe" KeyPath="yes" />
+      </Component>
+
+      <!-- Modules -->
+      <Component Id="Modules" Guid="PUT-GUID-HERE">
+        <CreateFolder />
+        <File Id="core_sh" Source="..\palladium\modules\core.sh" />
+        <File Id="ai_sh" Source="..\palladium\modules\ai.sh" />
+        <File Id="services_sh" Source="..\palladium\modules\services.sh" />
+        <File Id="marketplace_sh" Source="..\palladium\modules\marketplace.sh" />
+        <!-- ... all other modules -->
+      </Component>
+
+      <!-- Marketplace tools -->
+      <Component Id="Marketplace" Guid="PUT-GUID-HERE">
+        <CreateFolder />
+        <DirectoryRef Id="MarketplaceDir">
+          <Component Id="Tools" Guid="PUT-GUID-HERE">
+            <CreateFolder Directory="MarketplaceDir" />
+          </Component>
+        </DirectoryRef>
+      </Component>
+
+      <!-- Services (Docker compose templates) -->
+      <Component Id="Services" Guid="PUT-GUID-HERE">
+        <CreateFolder Directory="ServicesDir" />
+      </Component>
+
+      <!-- Stacks -->
+      <Component Id="Stacks" Guid="PUT-GUID-HERE">
+        <CreateFolder Directory="StacksDir" />
+      </Component>
+
+      <!-- Data directory -->
+      <Component Id="DataDir" Guid="PUT-GUID-HERE">
+        <CreateFolder Directory="DataDir" />
+      </Component>
+
+      <!-- Scripts -->
+      <Component Id="Scripts" Guid="PUT-GUID-HERE">
+        <File Id="start_sh" Source="..\start.sh" />
+        <File Id="stop_sh" Source="..\stop.sh" />
+        <File Id="setup_sh" Source="..\setup.sh" />
+        <File Id="uninstall_sh" Source="..\uninstall.sh" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Shortcuts -->
+    <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder">
+      <Shortcut Id="StartMenuShortcut" Name="Palladium" Description="Universal Portable Server Manager" Target="[INSTALLFOLDER]palladium.exe" WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Palladium" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Desktop shortcut -->
+    <Component Id="DesktopShortcut" Directory="DesktopFolder">
+      <Shortcut Id="DesktopShortcut" Name="Palladium" Description="Universal Portable Server Manager" Target="[INSTALLFOLDER]palladium.exe" WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveDesktopFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Palladium" Name="desktop" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Add to PATH -->
+    <Component Id="AddToPath" Directory="INSTALLFOLDER" Guid="PUT-GUID-HERE">
+      <Environment Id="PalladiumPath" Name="PATH" Value="[INSTALLFOLDER]" Permanent="no" System="yes" Action="set" Part="last" />
+    </Component>
+
+    <!-- Firewall rule for API server -->
+    <Component Id="FirewallRule" Directory="INSTALLFOLDER" Guid="PUT-GUID-HERE">
+      <FirewallException Id="PalladiumAPI" Name="Palladium API Server" Description="Allows Palladium REST API server" Program="[INSTALLFOLDER]palladium.exe" Port="8080" Protocol="tcp" Profile="all" />
+    </Component>
+
+    <!-- Services for auto-start -->
+    <Component Id="PalladiumService" Directory="INSTALLFOLDER" Guid="PUT-GUID-HERE">
+      <ServiceInstall Id="PalladiumServiceInstall" Type="ownProcess" Vital="yes" Name="Palladium" DisplayName="Palladium Server" Description="Universal Portable Server Manager" Start="auto" Account="LocalSystem" ErrorControl="normal" />
+      <ServiceControl Id="PalladiumServiceControl" Start="install" Stop="both" Remove="uninstall" Name="Palladium" Wait="yes" />
+    </Component>
+
+    <!-- WSL2 integration -->
+    <Component Id="WSL2Integration" Directory="INSTALLFOLDER" Guid="PUT-GUID-HERE">
+      <Condition><![CDATA[NOT WSL2_INSTALLED]]></Condition>
+      <File Id="wsl2_setup" Source="..\wsl2-setup.ps1" />
+    </Component>
+  </Product>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="ModulesDir" Name="modules" />
+      <Directory Id="MarketplaceDir" Name="marketplace" />
+      <Directory Id="ServicesDir" Name="services" />
+      <Directory Id="StacksDir" Name="stacks" />
+      <Directory Id="DataDir" Name="data" />
+      <Directory Id="PluginsDir" Name="plugins" />
+    </DirectoryRef>
+  </Fragment>
+</Wix>

@@ -4,6 +4,23 @@
 DATA_WORKSPACE="$DATA_DIR/workspace"
 mkdir -p "$DATA_WORKSPACE/databases" "$DATA_WORKSPACE/exports" "$DATA_WORKSPACE/queries"
 
+# Basic SQL injection prevention - block dangerous patterns
+validate_sql_input() {
+    local query="$1"
+    # Block common SQL injection patterns
+    if echo "$query" | grep -qiE ";\s*(DROP|DELETE|TRUNCATE|ALTER|CREATE|INSERT|UPDATE)"; then
+        echo -e "${RED}  Blocked: multi-statement destructive queries not allowed.${NC}"
+        return 1
+    fi
+    if echo "$query" | grep -qiE "\b(DROP|TRUNCATE|ALTER)\s+(TABLE|DATABASE)"; then
+        echo -e "${RED}  Blocked: schema modification queries require confirmation.${NC}"
+        if ! confirm "  This will modify the database schema. Continue?"; then
+            return 1
+        fi
+    fi
+    return 0
+}
+
 data_menu() {
     clear 2>/dev/null || true
     echo -e "${SILVER}${BOLD}  ═══ Data Analysis Workspace ═══${NC}"
@@ -218,7 +235,7 @@ data_create_supabase() {
         press_enter; return
     fi
 
-    source "$DATA_DIR/supabase.conf"
+    [ -f "$DATA_DIR/supabase.conf" ] && source "$DATA_DIR/supabase.conf"
     echo -e "${GREEN}Using Supabase: $PROJECT_NAME${NC}"
 
     local db_name=$(prompt_value "  Table name" "analysis_results")
@@ -255,7 +272,7 @@ data_query() {
 
     # Add Supabase if connected
     if [ -f "$DATA_DIR/supabase.conf" ]; then
-        source "$DATA_DIR/supabase.conf"
+        [ -f "$DATA_DIR/supabase.conf" ] && source "$DATA_DIR/supabase.conf"
         databases+=("supabase")
         echo -e "  ${BOLD}[$i]${NC}  ${GREEN}Supabase Cloud${NC} ($PROJECT_NAME)"
         ((i++))
@@ -288,7 +305,7 @@ data_run_query() {
     local db_name=""
     if [ "$db_ref" = "supabase" ]; then
         db_type="supabase"
-        source "$DATA_DIR/supabase.conf"
+        [ -f "$DATA_DIR/supabase.conf" ] && source "$DATA_DIR/supabase.conf"
         db_name="$PROJECT_NAME"
     elif [ -f "$db_ref" ]; then
         db_type=$(grep "^type=" "$db_ref" | cut -d= -f2)
@@ -311,6 +328,8 @@ data_run_query() {
     done
 
     [ -z "$query" ] && { echo -e "${YELLOW}No query entered.${NC}"; press_enter; return; }
+
+    validate_sql_input "$query" || { press_enter; return; }
 
     echo ""
     echo -e "${SILVER}Running:${NC}"

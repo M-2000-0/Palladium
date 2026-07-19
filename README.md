@@ -1,6 +1,6 @@
 # Palladium — Universal Portable Server Manager
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)]()
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
 
@@ -47,8 +47,8 @@ palladium dashboard        # live server overview
 ## Features
 
 - **Portable** — Lives on a USB/SSD. Works on any machine with Docker.
-- **Service catalog** — 50+ pre-integrated services (AI, databases, automation, web)
-- **Marketplace** — One-command install: Ollama, n8n, Postgres, Flowise, Supabase, and more
+- **Service catalog** — 50+ services via marketplace + AI app catalog (AI, databases, DevOps, web, messaging)
+- **Marketplace** — One-command install: Ollama, n8n, Postgres, Grafana, Portainer, MinIO, and more
 - **Stacks** — Pre-built bundles: Starter (n8n+DB), Business, Dev, Production
 - **AI Toolkit** — Local LLMs (Ollama), API connectors (OpenAI, Anthropic, Groq), RAG pipelines
 - **Dashboard** — Interactive terminal UI (Claude Code–style) with services, resources, URLs
@@ -109,15 +109,17 @@ Palladium is designed to live on a USB stick or portable SSD. Here's why that ma
 palladium/
 ├── palladium/            CLI framework
 │   ├── palladium         Main entry point
-│   ├── modules/          29 core modules
-│   ├── marketplace/      Tool catalog (.tool files)
-│   ├── services/         Docker Compose templates
+│   ├── modules/          27 core modules
+│   ├── marketplace/      22 tool catalog (.tool files)
+│   ├── services/         Docker Compose templates (with healthchecks)
 │   ├── stacks/           Pre-built stack bundles
 │   └── data/             Runtime data
-├── VERSION               1.0.0
+├── VERSION               1.1.0
+├── .shellcheckrc         ShellCheck linting config
 ├── CHANGELOG.md          Release history
 ├── SECURITY.md           Vulnerability reporting
 ├── setup.sh              First-time setup
+├── plug-and-play.sh      Plug-and-play launcher (OS/USB/Docker detection)
 ├── start.sh              Launch the menu
 ├── stop.sh               Stop services
 ├── install.sh            Install CLI system-wide
@@ -133,3 +135,15 @@ palladium start n8n
 ```
 
 Your existing data in `./data/` and `./postgres/` is preserved.
+
+## Open-source release model
+
+This project follows an optional, versioned release model:
+
+- Releases are documented as milestones such as Update 1.0, Update 1.1, and so on
+- Users are never forced to upgrade
+- Older versions remain usable and can be kept indefinitely
+- New releases are additive and optional
+- Users can roll back to a previous update whenever they want
+
+For the full release philosophy and current release notes, see [releases/README.md](releases/README.md).

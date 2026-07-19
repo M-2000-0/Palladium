@@ -1,4 +1,4 @@
-# desc: Full monitoring stack for production use
+# desc: Production database and cache layer
 # services: PostgreSQL, Redis
 postgres|5432
 redis|6379

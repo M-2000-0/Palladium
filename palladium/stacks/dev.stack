@@ -1,4 +1,4 @@
-# desc: Web hosting with database and caching
+# desc: Web server with database and caching for development
 # services: Nginx, PostgreSQL, Redis
 nginx|80
 postgres|5432

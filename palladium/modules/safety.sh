@@ -274,7 +274,7 @@ pull_image_with_fallback() {
             # Replace image in compose file
             local compose_file="${3:-docker-compose.yml}"
             if [ -f "$compose_file" ]; then
-                sed -i "s|$image|$fallback|g" "$compose_file"
+                sed_inplace "s|$image|$fallback|g" "$compose_file"
             fi
             return 0
         fi

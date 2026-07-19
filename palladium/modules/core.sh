@@ -172,3 +172,162 @@ prompt_instance_name() {
         fi
     done
 }
+
+# Cross-platform sed -i (macOS requires backup extension)
+sed_inplace() {
+    if [ "$(uname)" = "Darwin" ]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
+
+# ============================================
+# Plugin System
+# ============================================
+
+PLUGINS_DIR="$PALLADIUM_HOME/plugins"
+
+# Load all enabled plugins
+load_plugins() {
+    mkdir -p "$PLUGINS_DIR/enabled"
+    
+    for plugin_dir in "$PLUGINS_DIR/enabled"/*/; do
+        [ -d "$plugin_dir" ] || continue
+        local plugin_name=$(basename "$plugin_dir")
+        local plugin_main="$plugin_dir/$plugin_name.sh"
+        
+        if [ -f "$plugin_main" ]; then
+            log_message "Loading plugin: $plugin_name" "DEBUG"
+            source "$plugin_main" 2>/dev/null || {
+                log_message "Failed to load plugin: $plugin_name" "WARN"
+            }
+            # Call plugin init if it exists
+            if declare -f "plugin_${plugin_name}_init" >/dev/null; then
+                "plugin_${plugin_name}_init"
+            fi
+        fi
+    done
+}
+
+# Install a plugin from a git repo or local path
+plugin_install() {
+    local source="$1"
+    local name="$2"
+    
+    [ -z "$source" ] && { echo "Usage: plugin_install <git-repo|path> [name]"; return 1; }
+    
+    local plugin_name="${name:-$(basename "$source" .git)}"
+    local target="$PLUGINS_DIR/available/$plugin_name"
+    
+    if [ -d "$target" ]; then
+        echo -e "${YELLOW}Plugin $plugin_name already exists. Updating...${NC}"
+        if [ -d "$target/.git" ]; then
+            git -C "$target" pull
+        fi
+    else
+        if [[ "$source" =~ ^https?://|^git@ ]]; then
+            git clone "$source" "$target" || return 1
+        else
+            cp -r "$source" "$target" || return 1
+        fi
+    fi
+    
+    # Validate plugin structure
+    if [ ! -f "$target/$plugin_name.sh" ]; then
+        echo -e "${RED}Invalid plugin: missing $plugin_name.sh${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}Plugin $plugin_name installed.${NC}"
+    echo "Enable with: plugin_enable $plugin_name"
+}
+
+# Enable a plugin (symlink to enabled/)
+plugin_enable() {
+    local name="$1"
+    [ -z "$name" ] && { echo "Usage: plugin_enable <name>"; return 1; }
+    
+    local src="$PLUGINS_DIR/available/$name"
+    local dst="$PLUGINS_DIR/enabled/$name"
+    
+    [ -d "$src" ] || { echo -e "${RED}Plugin not found: $name${NC}"; return 1; }
+    
+    ln -sfn "$src" "$dst"
+    echo -e "${GREEN}Plugin $name enabled. Restart Palladium to load.${NC}"
+}
+
+# Disable a plugin
+plugin_disable() {
+    local name="$1"
+    [ -z "$name" ] && { echo "Usage: plugin_disable <name>"; return 1; }
+    
+    rm -f "$PLUGINS_DIR/enabled/$name"
+    echo -e "${YELLOW}Plugin $name disabled. Restart Palladium to unload.${NC}"
+}
+
+# List installed plugins
+plugin_list() {
+    echo -e "${SILVER}${BOLD}Available Plugins:${NC}"
+    for dir in "$PLUGINS_DIR/available"/*/; do
+        [ -d "$dir" ] || continue
+        local name=$(basename "$dir")
+        local status="${RED}disabled${NC}"
+        [ -L "$PLUGINS_DIR/enabled/$name" ] && status="${GREEN}enabled${NC}"
+        local desc=""
+        [ -f "$dir/plugin.conf" ] && desc=" - $(grep '^description=' "$dir/plugin.conf" | cut -d= -f2-)"
+        echo -e "  $name [$status]$desc"
+    done
+}
+
+# Create plugin scaffold
+plugin_create() {
+    local name="$1"
+    [ -z "$name" ] && { echo "Usage: plugin_create <name>"; return 1; }
+    
+    local dir="$PLUGINS_DIR/available/$name"
+    mkdir -p "$dir"
+    
+    cat > "$dir/$name.sh" << 'EOF'
+#!/bin/bash
+# Plugin: {{NAME}}
+# Description: {{DESCRIPTION}}
+
+plugin_{{NAME}}_init() {
+    # Called when plugin loads
+    log_message "Plugin {{NAME}} initialized" "DEBUG"
+}
+
+# Add menu items by defining plugin_{{NAME}}_menu()
+# plugin_{{NAME}}_menu() {
+#     echo "  [x] {{NAME}} - Custom action"
+# }
+
+# Handle menu selections by defining plugin_{{NAME}}_handle()
+# plugin_{{NAME}}_handle() {
+#     case "$1" in
+#         x) echo "Custom action" ;;
+#     esac
+# }
+EOF
+    sed_inplace "s/{{NAME}}/$name/g" "$dir/$name.sh"
+    
+    cat > "$dir/plugin.conf" << EOF
+name=$name
+version=1.0.0
+description=A new Palladium plugin
+author=Your Name
+EOF
+    
+    cat > "$dir/README.md" << EOF
+# $name Plugin
+
+Description here.
+
+## Usage
+
+EOF
+    
+    echo -e "${GREEN}Plugin scaffold created at $dir${NC}"
+    echo "Edit $dir/$name.sh to implement functionality."
+}

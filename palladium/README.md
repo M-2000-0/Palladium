@@ -17,8 +17,10 @@ You'll see a friendly menu. Pick an option. Done.
 The fastest way to get running:
 
 ```bash
-palladium
+./plug-and-play.sh
 ```
+
+That script performs the first-time setup, installs the CLI, and enables automatic startup where possible.
 
 Then select **[1] Quick Start** and pick a stack:
 

@@ -76,19 +76,21 @@ stack_install() {
         mkdir -p "$target/data"
         cp "$SERVICES_DIR/$svc_name.yml" "$target/docker-compose.yml"
 
-        sed -i "s/\${PORT}/$svc_port/g" "$target/docker-compose.yml"
+        sed_inplace "s/\${PORT}/$svc_port/g" "$target/docker-compose.yml"
 
         case "$svc_name" in
             n8n)
-                sed -i "s/\${N8N_USER:-admin}/admin/g" "$target/docker-compose.yml"
-                sed -i "s/\${N8N_PASSWORD:-changeme}/changeme/g" "$target/docker-compose.yml"
-                sed -i "s/\${TZ:-UTC}/UTC/g" "$target/docker-compose.yml"
-                sed -i "s/\${POSTGRES_PASSWORD:-changeme}/changeme/g" "$target/docker-compose.yml"
+                local n8n_pg_pass=$(generate_password)
+                sed_inplace "s/\${N8N_USER:-admin}/admin/g" "$target/docker-compose.yml"
+                sed_inplace "s/\${N8N_PASSWORD:-changeme}/admin/g" "$target/docker-compose.yml"
+                sed_inplace "s/\${TZ:-UTC}/UTC/g" "$target/docker-compose.yml"
+                sed_inplace "s/\${POSTGRES_PASSWORD:-changeme}/$n8n_pg_pass/g" "$target/docker-compose.yml"
                 ;;
             postgres)
-                sed -i "s/\${POSTGRES_USER:-admin}/admin/g" "$target/docker-compose.yml"
-                sed -i "s/\${POSTGRES_PASSWORD:-changeme}/changeme/g" "$target/docker-compose.yml"
-                sed -i "s/\${POSTGRES_DB:-mydb}/$stack_name/g" "$target/docker-compose.yml"
+                local pg_pass=$(generate_password)
+                sed_inplace "s/\${POSTGRES_USER:-admin}/admin/g" "$target/docker-compose.yml"
+                sed_inplace "s/\${POSTGRES_PASSWORD:-changeme}/$pg_pass/g" "$target/docker-compose.yml"
+                sed_inplace "s/\${POSTGRES_DB:-mydb}/$stack_name/g" "$target/docker-compose.yml"
                 ;;
         esac
 

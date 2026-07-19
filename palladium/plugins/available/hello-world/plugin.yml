@@ -1,0 +1,10 @@
+name: hello-world
+version: 1.0.0
+description: A simple hello world plugin demonstrating the plugin system
+author: Palladium Team
+license: MIT
+entry: hello-world.sh
+commands:
+  - h: Say hello
+hooks:
+  - menu_main

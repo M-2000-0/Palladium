@@ -43,13 +43,28 @@ fi
 # Create data directories
 mkdir -p data data/workspace/databases data/workspace/exports data/workspace/queries
 
+# Install CLI system-wide for a smoother plug-and-play experience
+if [ -x "$BASE/install.sh" ]; then
+    echo -e "${GREEN}Installing Palladium CLI system-wide...${NC}"
+    "$BASE/install.sh" >/dev/null 2>&1 || true
+fi
+
+# Enable automatic startup on Linux/ChromeOS when possible
+if command -v systemctl >/dev/null 2>&1 && systemctl --user list-units >/dev/null 2>&1; then
+    echo -e "${GREEN}Configuring automatic startup...${NC}"
+    bash "$BASE/palladium/install-autorun.sh" >/dev/null 2>&1 || true
+elif command -v crontab >/dev/null 2>&1; then
+    echo -e "${GREEN}Adding reboot startup entry...${NC}"
+    (crontab -l 2>/dev/null | grep -v "watch-usb.sh"; echo "@reboot $BASE/palladium/watch-usb.sh") | crontab - 2>/dev/null || true
+fi
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Setup Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "  Run ${SILVER}./palladium/palladium${NC} to launch the menu"
-echo -e "  Run ${SILVER}./install.sh${NC} to install the CLI system-wide"
+echo -e "  Run ${SILVER}palladium${NC} to launch the menu"
+echo -e "  Run ${SILVER}palladium stack starter${NC} to start n8n + PostgreSQL"
 echo ""
 echo -e "  Quick start:"
 echo -e "    ${SILVER}palladium stack starter${NC}   # n8n + PostgreSQL"

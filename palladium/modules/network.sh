@@ -1,24 +1,7 @@
 #!/bin/bash
 # network.sh - LAN sharing, reverse proxy, domain management
 
-# Portable port check - works on Linux, macOS, Windows (Git Bash/WSL)
-port_in_use() {
-    local port="$1"
-    local host="${2:-127.0.0.1}"
-    timeout 1 bash -c "echo >/dev/tcp/${host}/${port}" 2>/dev/null
-}
-
-# Check if port is listening on all interfaces (0.0.0.0)
-port_exposed() {
-    local port="$1"
-    if command -v ss &>/dev/null; then
-        ss -tln 2>/dev/null | grep -q ":$port "
-    elif command -v netstat &>/dev/null; then
-        netstat -tln 2>/dev/null | grep -q ":$port "
-    else
-        port_in_use "$port" "0.0.0.0"
-    fi
-}
+# port_in_use() and port_exposed() are defined in safety.sh
 
 network_menu() {
     clear 2>/dev/null || true

@@ -1,6 +1,25 @@
 #!/bin/bash
 main_menu() {
     while true; do
+        # First-run welcome
+        if [ ! -f "$PALLADIUM_HOME/.welcome_shown" ]; then
+            clear 2>/dev/null || true
+            echo ""
+            echo -e "${SILVER}${BOLD}  ═══ Welcome to Palladium! ═══${NC}"
+            echo ""
+            echo -e "  ${GREEN}You're all set up and ready to go.${NC}"
+            echo ""
+            echo -e "  ${BOLD}Quick start:${NC}"
+            echo -e "  ${DIM}  [1] Pre-built stacks  → One-click n8n + database${NC}"
+            echo -e "  ${DIM}  [4] Marketplace       → Browse 20+ self-hosted tools${NC}"
+            echo -e "  ${DIM}  [5] AI Toolkit        → Local LLMs and API connectors${NC}"
+            echo ""
+            echo -e "  ${DIM}Type '${SILVER}t${DIM}' to install Docker, Git, and other tools.${NC}"
+            echo ""
+            press_enter
+            touch "$PALLADIUM_HOME/.welcome_shown"
+        fi
+
         local running=0
         local docker_ok=false
         if find_docker_cli &> /dev/null && docker info &> /dev/null 2>&1; then

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>palladium</id>
+    <version>1.1.0</version>
+    <title>Palladium - Universal Portable Server Manager</title>
+    <authors>Palladium Team</authors>
+    <owners>M-2000-0</owners>
+    <description>Universal Portable Server Manager. Run self-hosted services from USB/SSD on any machine with Docker. Features: 50+ pre-integrated services, AI toolkit, marketplace, monitoring, backup, security.</description>
+    <summary>Portable server manager for self-hosted services</summary>
+    <projectUrl>https://github.com/M-2000-0/Palladium</projectUrl>
+    <licenseUrl>https://github.com/M-2000-0/Palladium/blob/main/LICENSE</licenseUrl>
+    <iconUrl>https://github.com/M-2000-0/Palladium/raw/main/assets/icon.png</iconUrl>
+    <tags>docker self-hosted server portable usb ssd homelab devops ai monitoring</tags>
+    <releaseNotes>https://github.com/M-2000-0/Palladium/releases/tag/v1.1.0</releaseNotes>
+    <copyright>2026 Palladium Team</copyright>
+    <packageSourceUrl>https://github.com/M-2000-0/Palladium</packageSourceUrl>
+    <docsUrl>https://github.com/M-2000-0/Palladium/wiki</docsUrl>
+    <mailingListUrl>https://github.com/M-2000-0/Palladium/discussions</mailingListUrl>
+    <bugTrackerUrl>https://github.com/M-2000-0/Palladium/issues</bugTrackerUrl>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

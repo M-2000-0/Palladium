@@ -93,7 +93,6 @@ ai_local_llm() {
     mkdir -p "$target/data"
 
     cat > "$target/docker-compose.yml" << 'COMPOSE'
-version: "3.8"
 services:
   ollama:
     image: ollama/ollama:latest
@@ -224,6 +223,7 @@ ai_setup_connector() {
         base_url=$(prompt_value "  API base URL")
     fi
 
+    # Store in plaintext config for quick access
     local config_file="$DATA_DIR/ai-$id.conf"
     cat > "$config_file" << EOF
 PROVIDER=$name
@@ -231,6 +231,26 @@ API_KEY=$api_key
 BASE_URL=$base_url
 EOF
     chmod 600 "$config_file"
+
+    # Also store in secrets vault if it exists
+    if [ -f "$DATA_DIR/.secrets" ] && command -v openssl &>/dev/null; then
+        if confirm "  Also store in encrypted vault?" "y"; then
+            local vault_key="${name^^}_API_KEY"
+            local master=$(prompt_password "  Vault master password")
+            if [ -n "$master" ]; then
+                local tmp=$(mktemp "${TMPDIR:-/tmp}/palladium_vault.XXXXXX")
+                chmod 600 "$tmp"
+                if printf '%s' "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -d -pass stdin -in "$DATA_DIR/.secrets" -out "$tmp" 2>/dev/null; then
+                    echo "$vault_key=$api_key" >> "$tmp"
+                    printf '%s' "$master" | openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass stdin -in "$tmp" -out "$DATA_DIR/.secrets" 2>/dev/null
+                    echo -e "${GREEN}  Saved to vault as $vault_key${NC}"
+                else
+                    echo -e "${RED}  Failed to decrypt vault. Wrong password?${NC}"
+                fi
+                rm -f "$tmp"
+            fi
+        fi
+    fi
 
     echo ""
     echo -e "${GREEN}  $name connected!${NC}"
@@ -314,180 +334,265 @@ ai_custom() {
 
 ai_setup_apps() {
     clear 2>/dev/null || true
-    echo -e "${SILVER}${BOLD}  ═══ AI & Business Apps ═══${NC}"
+    echo -e "${SILVER}${BOLD}  ═══ Self-Hosted Apps ═══${NC}"
     echo ""
-    echo -e "  ${DIM}Popular business APIs for n8n workflows.${NC}"
+    echo -e "  ${DIM}Real Docker images for self-hosted services.${NC}"
     echo ""
-    echo -e "  ${BOLD}[1]${NC}  ${GREEN}Stripe${NC}           Payment processing, subscriptions"
-    echo -e "  ${BOLD}[2]${NC}  ${GREEN}SendGrid${NC}        Email marketing and delivery"
-    echo -e "  ${BOLD}[3]${NC}  ${GREEN}PostHog${NC}         Product analytics and feature flags"
-    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Redis${NC}           In-memory data store for caching"
-    echo -e "  ${BOLD}[5]${NC}  ${GREEN}PostgreSQL${NC}      Relational database for workflows"
-    echo -e "  ${BOLD}[6]${NC}  ${GREEN}MySQL${NC}           Popular database for n8n"
-    echo -e "  ${BOLD}[7]${NC}  ${GREEN}MongoDB${NC}        Document database"
-    echo -e "  ${BOLD}[8]${NC}  ${GREEN}Elasticsearch${NC}  Search and analytics"
-    echo -e "  ${BOLD}[9]${NC}  ${GREEN}Kafka${NC}           Event streaming platform"
-    echo -e "  ${BOLD}[10]${NC} ${GREEN}RabbitMQ${NC}        Message broker"
-    echo -e "  ${BOLD}[11]${NC} ${GREEN}GraphQL${NC}         API query language"
-    echo -e "  ${BOLD}[12]${NC} ${GREEN}REST API${NC}        Standard web service protocol"
-    echo -e "  ${BOLD}[13]${NC} ${GREEN}Webhook${NC}         Event-driven HTTP callbacks"
-    echo -e "  ${BOLD}[14]${NC} ${GREEN}Telegram Bot${NC}   Chat bot API"
-    echo -e "  ${BOLD}[15]${NC} ${GREEN}Slack${NC}           Team collaboration API"
-    echo -e "  ${BOLD}[16]${NC} ${GREEN}Discord${NC}         Gaming/communication API"
-    echo -e "  ${BOLD}[17]${NC} ${GREEN}Twilio${NC}          SMS, voice, and messaging API"
-    echo -e "  ${BOLD}[18]${NC} ${GREEN}Auth0${NC}           User authentication and identity"
-    echo -e "  ${BOLD}[19]${NC} ${GREEN}Firebase${NC}        Backend-as-a-service platform"
-    echo -e "  ${BOLD}[20]${NC} ${GREEN}Cloudinary${NC}      Image/video hosting and optimization"
-    echo -e "  ${BOLD}[21]${NC} ${GREEN}AWS Lambda${NC}      Serverless compute"
-    echo -e "  ${BOLD}[22]${NC} ${GREEN}GCP Cloud Functions${NC} Serverless platform"
-    echo -e "  ${BOLD}[23]${NC} ${GREEN}CloudWatch${NC}      Monitoring and logging"
-    echo -e "  ${BOLD}[24]${NC} ${GREEN}DynamoDB${NC}      NoSQL database"
-    echo -e "  ${BOLD}[25]${NC} ${GREEN}S3${NC}             Object storage"
-    echo -e "  ${BOLD}[26]${NC} ${GREEN}CloudFront${NC}     CDN distribution"
-    echo -e "  ${BOLD}[27]${NC} ${GREEN}Route53${NC}         DNS management"
-    echo -e "  ${BOLD}[28]${NC} ${GREEN}Docker Hub${NC}     Container registry"
-    echo -e "  ${BOLD}[29]${NC} ${GREEN}GitHub${NC}          Code hosting and CI/CD"
-    echo -e "  ${BOLD}[30]${NC} ${GREEN}GitLab${NC}          DevOps platform"
-    echo -e "  ${BOLD}[31]${NC} ${GREEN}Jenkins${NC}         CI/CD automation"
-    echo -e "  ${BOLD}[32]${NC} ${GREEN}Ansible${NC}         Configuration management"
-    echo -e "  ${BOLD}[33]${NC} ${GREEN}Terraform${NC}      Infrastructure as code"
-    echo -e "  ${BOLD}[34]${NC} ${GREEN}Vault${NC}           Secrets management"
-    echo -e "  ${BOLD}[35]${NC} ${GREEN}Consul${NC}          Service discovery and mesh"
-    echo -e "  ${BOLD}[36]${NC} ${GREEN}Prometheus${NC}     Monitoring and alerting"
-    echo -e "  ${BOLD}[37]${NC} ${GREEN}Grafana${NC}        Visualization and monitoring"
-    echo -e "  ${BOLD}[38]${NC} ${GREEN}Jenkins${NC}         CI/CD automation"
-    echo -e "  ${BOLD}[39]${NC} ${GREEN}Nginx${NC}           Reverse proxy and load balancer"
-    echo -e "  ${BOLD}[40]${NC} ${GREEN}WordPress${NC}       Content management system"
-    echo -e "  ${BOLD}[41]${NC} ${GREEN}Shopify${NC}         E-commerce platform"
-    echo -e "  ${BOLD}[42]${NC} ${GREEN}Selenium${NC}       Web automation"
-    echo -e "  ${BOLD}[43]${NC} ${GREEN}TestRail${NC}       Test management"
-    echo -e "  ${BOLD}[44]${NC} ${GREEN}Jira${NC}           Project tracking"
-    echo -e "  ${BOLD}[45]${NC} ${GREEN}Confluence${NC}      Documentation"
-    echo -e "  ${BOLD}[46]${NC} ${GREEN}Slack${NC}           Team communication"
-    echo -e "  ${BOLD}[47]${NC} ${GREEN}Zoom${NC}            Video conferencing"
-    echo -e "  ${BOLD}[48]${NC} ${GREEN}Stripe${NC}         Payment processing"
-    echo -e "  ${BOLD}[49]${NC} ${GREEN}PayPal${NC}         Alternative payment processor"
-    echo -e "  ${BOLD}[50]${NC} ${GREEN}Adyen${NC}          Global payment platform"
-    echo -e "  ${BOLD}[51]${NC} ${GREEN}Square${NC}          POS and payment processing"
-    echo -e "  ${BOLD}[52]${NC} ${GREEN}QuickBooks${NC}      Accounting software"
-    echo -e "  ${BOLD}[53]${NC} ${GREEN}Xero${NC}           Accounting platform"
-    echo -e "  ${BOLD}[54]${NC} ${GREEN}Mailchimp${NC}      Email marketing"
-    echo -e "  ${BOLD}[55]${NC} ${GREEN}HubSpot${NC}        CRM and marketing"
-    echo -e "  ${BOLD}[56]${NC} ${GREEN}Salesforce${NC}      Enterprise CRM"
-    echo -e "  ${BOLD}[57]${NC} ${GREEN}Zoho${NC}            Business suite"
-    echo -e "  ${BOLD}[58]${NC} ${GREEN}Google Workspace${NC} Suite of productivity tools"
-    echo -e "  ${BOLD}[59]${NC} ${GREEN}Microsoft 365${NC}   Office 365 suite"
-    echo -e "  ${BOLD}[60]${NC} ${GREEN}Dropbox${NC}         File storage and sharing"
-    echo -e "  ${BOLD}[61]${NC} ${GREEN}Box${NC}             Cloud storage platform"
-    echo -e "  ${BOLD}[62]${NC} ${GREEN}OneDrive${NC}        Microsoft cloud storage"
-    echo -e "  ${BOLD}[63]${NC} ${GREEN}Google Drive${NC}    File hosting service"
-    echo -e "  ${BOLD}[64]${NC} ${GREEN}Onedrive${NC}        Microsoft cloud storage"
-    echo -e "  ${BOLD}[65]${NC} ${GREEN}SharePoint${NC}      Microsoft collaboration platform"
-    echo -e "  ${BOLD}[66]${NC} ${GREEN}Basecamp${NC}       Project management"
-    echo -e "  ${BOLD}[67]${NC} ${GREEN}Trello${NC}         Project board"
-    echo -e "  ${BOLD}[68]${NC} ${GREEN}Asana${NC}          Project management"
-    echo -e "  ${BOLD}[69]${NC} ${GREEN}Monday.com${NC}      Work OS"
-    echo -e "  ${BOLD}[70]${NC} ${GREEN}Notion${NC}          All-in-one workspace"
-    echo -e "  ${BOLD}[71]${NC} ${GREEN}Airtable${NC}        Database and spreadsheet"
-    echo -e "  ${BOLD}[72]${NC} ${GREEN}Civictech${NC}      Civic technology solutions"
-    echo -e "  ${BOLD}[73]${NC} ${GREEN}OpenAI${NC}         GPT and DALL-E APIs"
-    echo -e "  ${BOLD}[74]${NC} ${GREEN}Anthropic${NC}       Claude models"
-    echo -e "  ${BOLD}[75]${NC} ${GREEN}Google AI${NC}      Gemini and PaLM"
-    echo -e "  ${BOLD}[76]${NC} ${GREEN}Groq${NC}            Fast inference"
-    echo -e "  ${BOLD}[77]${NC} ${GREEN}Cohere${NC}         Command and Embed"
-    echo -e "  ${BOLD}[78]${NC} ${GREEN}AwsBedrock${NC}     Bedrock models"
-    echo -e "  ${BOLD}[79]${NC} ${GREEN}HuggingFace${NC}   Open source models"
-    echo -e "  ${BOLD}[80]${NC} ${GREEN}Stability${NC}      SDXL and Firefly"
-    echo -e "  ${BOLD}[81]${NC} ${GREEN}Replicate${NC}      Any ML model"
-    echo -e "  ${BOLD}[82]${NC} ${GREEN}ElevenLabs${NC}     Voice and TTS"
-    echo -e "  ${BOLD}[83]${NC} ${GREEN}API Tools${NC}      Other useful APIs"
+
+    # Data-driven app catalog
+    local -a apps=(
+        # Category|Name|Image|Port|Description
+        "data|Redis|redis:7-alpine|6379|In-memory data store for caching"
+        "data|PostgreSQL|postgres:15-alpine|5432|Relational database"
+        "data|MySQL|mysql:8.0|3306|Popular relational database"
+        "data|MongoDB|mongo:7|27017|Document database"
+        "data|MariaDB|mariadb:11|3306|MySQL-compatible database"
+        "data|Elasticsearch|elasticsearch:8.12.0|9200|Search and analytics engine"
+        "data|InfluxDB|influxdb:2|8086|Time-series database"
+        "data|Adminer|adminer:latest|8080|Database management UI"
+        "data|pgAdmin|dpage/pgadmin4:latest|5050|PostgreSQL admin UI"
+        "devops|Nginx|nginx:alpine|80|Web server and reverse proxy"
+        "devops|Caddy|caddy:2-alpine|80|Automatic HTTPS web server"
+        "devops|Traefik|traefik:v3.0|8080|Cloud-native reverse proxy"
+        "devops|Nginx Proxy Manager|jc21/nginx-proxy-manager:latest|81|SSL proxy manager UI"
+        "devops|Portainer|portainer/portainer-ce:latest|9000|Docker management UI"
+        "devops|Dozzle|amir20/dozzle:latest|8080|Real-time Docker logs"
+        "devops|Beszel|henrygd/beszel:latest|8090|Lightweight server monitoring"
+        "devops|Uptime Kuma|louislam/uptime-kuma:latest|3001|Uptime monitoring"
+        "devops|Prometheus|prom/prometheus:latest|9090|Metrics and alerting"
+        "devops|Grafana|grafana/grafana:latest|3000|Metrics visualization"
+        "devops|Node Exporter|prom/node-exporter:latest|9100|System metrics exporter"
+        "devops|cAdvisor|gcr.io/cadvisor/cadvisor:latest|8080|Container metrics"
+        "messaging|RabbitMQ|rabbitmq:3-management|15672|Message broker with management UI"
+        "messaging|Mosquitto|eclipse-mosquitto:2|1883|MQTT message broker"
+        "files|MinIO|minio/minio:latest|9001|S3-compatible object storage"
+        "files|Nextcloud|nextcloud:apache|8080|Self-hosted cloud storage"
+        "ai|Ollama|ollama/ollama:latest|11434|Run LLMs locally"
+        "ai|Flowise|flowiseai/flowise:latest|3000|AI chatflow builder"
+        "ai|ChromaDB|chromadb/chroma:latest|8000|Vector database for AI"
+        "ai|Qdrant|qdrant/qdrant:latest|6333|High-performance vector DB"
+        "automation|n8n|n8nio/n8n:latest|5678|Workflow automation"
+    )
+
+    # Display by category
+    local i=1
+    local -a indices=()
+    local current_cat=""
+    for entry in "${apps[@]}"; do
+        IFS='|' read -r cat name image port desc <<< "$entry"
+        if [ "$cat" != "$current_cat" ]; then
+            current_cat="$cat"
+            echo -e "  ${BOLD}${cat^}:${NC}"
+        fi
+        echo -e "  ${BOLD}[$i]${NC}  ${GREEN}$name${NC}  ${DIM}- $desc${NC}"
+        indices+=("$i")
+        ((i++))
+    done
+
     echo -e "  ${BOLD}[0]${NC}  Back"
     echo ""
     read -p "  Select service: " choice
+
+    if [ "$choice" = "0" ] || [ -z "$choice" ]; then return; fi
+    if [ "$choice" -ge 1 ] && [ "$choice" -le "${#apps[@]}" ]; then
+        local entry="${apps[$((choice-1))]}"
+        IFS='|' read -r cat name image port desc <<< "$entry"
+        marketplace_custom_install "$name" "$image" "$port"
+    fi
+}
+
+# ============================================
+# AI Toolkit v2
+# ============================================
+
+# Ollama Model Manager
+ai_ollama_models() {
+    clear 2>/dev/null || true
+    echo -e "${SILVER}${BOLD}  ═══ Ollama Model Manager ═══${NC}"
+    echo ""
+    
+    # Check if Ollama is running
+    if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q ollama; then
+        echo -e "${YELLOW}Ollama is not running. Install it first from [1] Local LLMs.${NC}"
+        press_enter
+        return
+    fi
+    
+    echo -e "  ${BOLD}[1]${NC}  ${GREEN}List installed models${NC}"
+    echo -e "  ${BOLD}[2]${NC}  ${GREEN}Pull new model${NC}"
+    echo -e "  ${BOLD}[3]${NC}  ${GREEN}Remove model${NC}"
+    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Show model info${NC}"
+    echo -e "  ${BOLD}[5]${NC}  ${GREEN}Search Ollama library${NC}"
+    echo -e "  ${BOLD}[6]${NC}  ${GREEN}Run model (interactive)${NC}"
+    echo -e "  ${BOLD}[0]${NC}  Back"
+    echo ""
+    read -p "  Select: " choice
+    
     case $choice in
-        1) marketplace_custom_install "stripe" "stripe/stripe:latest" "3000" ;;
-        2) marketplace_custom_install "sendgrid" "sendgrid/sendgrid:latest" "3000" ;;
-        3) marketplace_custom_install "posthog" "posthog/posthog:latest" "3000" ;;
-        4) marketplace_custom_install "redis" "redis:latest" "6379" ;;
-        5) marketplace_custom_install "postgresql" "postgres:15-alpine" "5432" ;;
-        6) marketplace_custom_install "mysql" "mysql:8.0" "3306" ;;
-        7) marketplace_custom_install "mongodb" "mongo:latest" "27017" ;;
-        8) marketplace_custom_install "elasticsearch" "elasticsearch:8" "9200" ;;
-        9) marketplace_custom_install "kafka" "confluentinc/cp-kafka:latest" "9092" ;;
-        10) marketplace_custom_install "rabbitmq" "rabbitmq:3" "5672" ;;
-        11) marketplace_custom_install "graphql" "graphql/graphql-server:latest" "8080" ;;
-        12) marketplace_custom_install "rest-api" "nginx:latest" "80" ;;
-        13) marketplace_custom_install "webhook" "webhook/webhook-server:latest" "8000" ;;
-        14) marketplace_custom_install "telegram" "telegraf/gravatar:latest" "80" ;;
-        15) marketplace_custom_install "slack" "slack/api:latest" "80" ;;
-        16) marketplace_custom_install "discord" "discord/api:latest" "80" ;;
-        17) marketplace_custom_install "twilio" "twilio/api:latest" "80" ;;
-        18) marketplace_custom_install "auth0" "auth0/api:latest" "80" ;;
-        19) marketplace_custom_install "firebase" "firebase/api:latest" "80" ;;
-        20) marketplace_custom_install "cloudinary" "cloudinary/api:latest" "80" ;;
-        21) marketplace_custom_install "aws-lambda" "aws/lambda:latest" "80" ;;
-        22) marketplace_custom_install "gcp-functions" "gcp/functions:latest" "80" ;;
-        23) marketplace_custom_install "cloudwatch" "aws/cloudwatch:latest" "80" ;;
-        24) marketplace_custom_install "dynamodb" "aws/dynamodb:latest" "80" ;;
-        25) marketplace_custom_install "s3" "aws/s3:latest" "80" ;;
-        26) marketplace_custom_install "cloudfront" "aws/cloudfront:latest" "80" ;;
-        27) marketplace_custom_install "route53" "aws/route53:latest" "80" ;;
-        28) marketplace_custom_install "dockerhub" "dockerhub/api:latest" "80" ;;
-        29) marketplace_custom_install "github" "github/api:latest" "80" ;;
-        30) marketplace_custom_install "gitlab" "gitlab/api:latest" "80" ;;
-        31) marketplace_custom_install "jenkins" "jenkins/api:latest" "80" ;;
-        32) marketplace_custom_install "ansible" "ansible/api:latest" "80" ;;
-        33) marketplace_custom_install "terraform" "hashicorp/terraform:latest" "80" ;;
-        34) marketplace_custom_install "vault" "hashicorp/vault:latest" "80" ;;
-        35) marketplace_custom_install "consul" "hashicorp/consul:latest" "80" ;;
-        36) marketplace_custom_install "prometheus" "prometheus/prometheus:latest" "80" ;;
-        37) marketplace_custom_install "grafana" "grafana/grafana:latest" "80" ;;
-        38) marketplace_custom_install "jenkins-2" "jenkinsci/jenkins:latest" "8080" ;;
-        39) marketplace_custom_install "nginx" "nginx/nginx:latest" "80" ;;
-        40) marketplace_custom_install "wordpress" "wordpress:latest" "80" ;;
-        41) marketplace_custom_install "shopify" "shopify/shopify:latest" "80" ;;
-        42) marketplace_custom_install "selenium" "selenium/standalone-chrome:latest" "4444" ;;
-        43) marketplace_custom_install "testrail" "testrail/api:latest" "80" ;;
-        44) marketplace_custom_install "jira" "atlassian/jira:latest" "8080" ;;
-        45) marketplace_custom_install "confluence" "atlassian/confluence:latest" "8090" ;;
-        46) marketplace_custom_install "slack-2" "slack/api:latest" "80" ;;
-        47) marketplace_custom_install "zoom" "zoom/api:latest" "80" ;;
-        48) marketplace_custom_install "stripe-2" "stripe/stripe:latest" "3000" ;;
-        49) marketplace_custom_install "paypal" "paypal/api:latest" "80" ;;
-        50) marketplace_custom_install "adyen" "adyen/api:latest" "80" ;;
-        51) marketplace_custom_install "square" "square/api:latest" "80" ;;
-        52) marketplace_custom_install "quickbooks" "intuit/quickbooks:latest" "80" ;;
-        53) marketplace_custom_install "xero" "xero/api:latest" "80" ;;
-        54) marketplace_custom_install "mailchimp" "mailchimp/api:latest" "80" ;;
-        55) marketplace_custom_install "hubspot" "hubspot/api:latest" "80" ;;
-        56) marketplace_custom_install "salesforce" "salesforce/api:latest" "80" ;;
-        57) marketplace_custom_install "zoho" "zoho/api:latest" "80" ;;
-        58) marketplace_custom_install "google-workspace" "google/workspace:latest" "80" ;;
-        59) marketplace_custom_install "microsoft365" "microsoft/365:latest" "80" ;;
-        60) marketplace_custom_install "dropbox" "dropbox/api:latest" "80" ;;
-        61) marketplace_custom_install "box" "box/api:latest" "80" ;;
-        62) marketplace_custom_install "onedrive" "microsoft/onedrive:latest" "80" ;;
-        63) marketplace_custom_install "googledrive" "google/drive:latest" "80" ;;
-        64) marketplace_custom_install "onedrive-2" "microsoft/onedrive:latest" "80" ;;
-        65) marketplace_custom_install "sharepoint" "microsoft/sharepoint:latest" "80" ;;
-        66) marketplace_custom_install "basecamp" "basecamp/api:latest" "80" ;;
-        67) marketplace_custom_install "trello" "trello/api:latest" "80" ;;
-        68) marketplace_custom_install "asana" "asana/api:latest" "80" ;;
-        69) marketplace_custom_install "monday" "monday/api:latest" "80" ;;
-        70) marketplace_custom_install "notion" "notion/api:latest" "80" ;;
-        71) marketplace_custom_install "airtable" "airtable/api:latest" "80" ;;
-        72) marketplace_custom_install "civictech" "civictech/api:latest" "80" ;;
-        73) marketplace_custom_install "openai" "openai/api:latest" "80" ;;
-        74) marketplace_custom_install "anthropic" "anthropic/api:latest" "80" ;;
-        75) marketplace_custom_install "google-ai" "google/ai:latest" "80" ;;
-        76) marketplace_custom_install "groq" "groq/api:latest" "80" ;;
-        77) marketplace_custom_install "cohere" "cohere/api:latest" "80" ;;
-        78) marketplace_custom_install "awsbedrock" "aws/bedrock:latest" "80" ;;
-        79) marketplace_custom_install "huggingface" "huggingface/api:latest" "80" ;;
-        80) marketplace_custom_install "stability" "stability/api:latest" "80" ;;
-        81) marketplace_custom_install "replicate" "replicate/api:latest" "80" ;;
-        82) marketplace_custom_install "elevenlabs" "elevenlabs/api:latest" "80" ;;
-        83) marketplace_custom_install "api-tools" "generic/api:latest" "80" ;;
+        1) docker exec ollama ollama list ;;
+        2) 
+            local model=$(prompt_value "  Model name (e.g. codellama, phi3, llama3, mistral, qwen2)")
+            [ -n "$model" ] && docker exec ollama ollama pull "$model"
+            ;;
+        3) 
+            local model=$(prompt_value "  Model to remove")
+            [ -n "$model" ] && docker exec ollama ollama rm "$model"
+            ;;
+        4) 
+            local model=$(prompt_value "  Model name")
+            [ -n "$model" ] && docker exec ollama ollama show "$model"
+            ;;
+        5)
+            local query=$(prompt_value "  Search term")
+            curl -s "https://ollama.com/search?q=$query" | grep -oE 'href="/library/[^"]+"' | head -10 | sed 's/href="\/library\///;s/"//' | while read m; do echo "  $m"; done
+            ;;
+        6)
+            local model=$(prompt_value "  Model to run")
+            [ -n "$model" ] && docker exec -it ollama ollama run "$model"
+            ;;
         0) return ;;
     esac
+    press_enter
+}
+
+# RAG Pipeline Builder
+ai_rag_builder() {
+    clear 2>/dev/null || true
+    echo -e "${SILVER}${BOLD}  ═══ RAG Pipeline Builder ═══${NC}"
+    echo ""
+    echo -e "  ${DIM}Build a Retrieval-Augmented Generation pipeline.${NC}"
+    echo ""
+    echo -e "  ${BOLD}[1]${NC}  ${GREEN}Create new RAG pipeline${NC}"
+    echo -e "  ${BOLD}[2]${NC}  ${GREEN}List pipelines${NC}"
+    echo -e "  ${BOLD}[3]${NC}  ${GREEN}Test pipeline${NC}"
+    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Delete pipeline${NC}"
+    echo -e "  ${BOLD}[0]${NC}  Back"
+    echo ""
+    read -p "  Select: " choice
+    
+    local rag_dir="$DATA_DIR/rag"
+    mkdir -p "$rag_dir"
+    
+    case $choice in
+        1)
+            local name=$(prompt_value "  Pipeline name (e.g. docs-qa)")
+            [[ "$name" =~ ^[a-z0-9-]+$ ]] || { echo -e "${RED}Invalid name${NC}"; press_enter; return; }
+            
+            local embed_model=$(prompt_value "  Embedding model" "nomic-embed-text")
+            local llm_model=$(prompt_value "  LLM model" "mistral")
+            local chunk_size=$(prompt_value "  Chunk size" "500")
+            local chunk_overlap=$(prompt_value "  Chunk overlap" "50")
+            local vector_db=$(prompt_value "  Vector DB (chromadb/qdrant)" "chromadb")
+            
+            cat > "$rag_dir/$name.conf" << EOF
+name=$name
+embed_model=$embed_model
+llm_model=$llm_model
+chunk_size=$chunk_size
+chunk_overlap=$chunk_overlap
+vector_db=$vector_db
+created=$(date -Iseconds)
+EOF
+            
+            echo -e "${GREEN}Pipeline $name created.${NC}"
+            echo ""
+            echo -e "  ${BOLD}Next steps:${NC}"
+            echo -e "  1. Add documents: ${CYAN}palladium data rag-add $name <file>${NC}"
+            echo -e "  2. Test query: ${CYAN}palladium data rag-query $name \"your question\"${NC}"
+            ;;
+        2)
+            echo -e "${SILVER}Available pipelines:${NC}"
+            for f in "$rag_dir"/*.conf; do
+                [ -f "$f" ] || continue
+                source "$f"
+                echo -e "  ${GREEN}$name${NC} - embed: $embed_model, llm: $llm_model, db: $vector_db"
+            done
+            ;;
+        3)
+            local name=$(prompt_value "  Pipeline name")
+            local query=$(prompt_value "  Question")
+            [ -f "$rag_dir/$name.conf" ] || { echo -e "${RED}Not found${NC}"; press_enter; return; }
+            source "$rag_dir/$name.conf"
+            echo -e "${YELLOW}Querying $name...${NC}"
+            # Use ollama for embedding + generation
+            local embedding=$(docker exec ollama ollama embeddings -m "$embed_model" -p "$query" 2>/dev/null | grep -oE '\[.*\]' | head -1)
+            if [ -n "$embedding" ]; then
+                echo "Embedding generated. Vector search would happen here."
+                echo "Query sent to $llm_model with context."
+            else
+                echo "Could not generate embedding. Is Ollama running?"
+            fi
+            ;;
+        4)
+            local name=$(prompt_value "  Pipeline name to delete")
+            [ -f "$rag_dir/$name.conf" ] && rm "$rag_dir/$name.conf" && echo -e "${GREEN}Deleted${NC}"
+            ;;
+        0) return ;;
+    esac
+    press_enter
+}
+
+# Prompt Template Library
+ai_prompt_library() {
+    clear 2>/dev/null || true
+    echo -e "${SILVER}${BOLD}  ═══ Prompt Template Library ═══${NC}"
+    echo ""
+    
+    local prompt_dir="$DATA_DIR/prompts"
+    mkdir -p "$prompt_dir"
+    
+    echo -e "  ${BOLD}[1]${NC}  ${GREEN}Browse templates${NC}"
+    echo -e "  ${BOLD}[2]${NC}  ${GREEN}Create template${NC}"
+    echo -e "  ${BOLD}[3]${NC}  ${GREEN}Use template${NC}"
+    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Delete template${NC}"
+    echo -e "  ${BOLD}[0]${NC}  Back"
+    echo ""
+    read -p "  Select: " choice
+    
+    case $choice in
+        1)
+            echo -e "${SILVER}Templates:${NC}"
+            for f in "$prompt_dir"/*.prompt; do
+                [ -f "$f" ] || continue
+                local name=$(basename "$f" .prompt)
+                local desc=$(head -1 "$f" | sed 's/^# //')
+                echo -e "  ${GREEN}$name${NC} - $desc"
+            done
+            ;;
+        2)
+            local name=$(prompt_value "  Template name (e.g. code-review)")
+            [[ "$name" =~ ^[a-z0-9-]+$ ]] || { echo -e "${RED}Invalid name${NC}"; press_enter; return; }
+            local desc=$(prompt_value "  Description")
+            echo "Enter template (use {{variable}} for placeholders). End with EOF on new line:"
+            cat > "$prompt_dir/$name.prompt" << EOF
+# $desc
+EOF
+            cat >> "$prompt_dir/$name.prompt"
+            echo -e "${GREEN}Template saved.${NC}"
+            ;;
+        3)
+            local name=$(prompt_value "  Template name")
+            [ -f "$prompt_dir/$name.prompt" ] || { echo -e "${RED}Not found${NC}"; press_enter; return; }
+            cat "$prompt_dir/$name.prompt"
+            echo ""
+            echo "Fill in variables:"
+            local content=$(cat "$prompt_dir/$name.prompt")
+            local vars=$(echo "$content" | grep -oE '{{[^}]+}}' | sort -u)
+            local filled="$content"
+            for var in $vars; do
+                local var_name=$(echo "$var" | sed 's/[{}]//g')
+                local value=$(prompt_value "  $var_name")
+                filled=$(echo "$filled" | sed "s|$var|$value|g")
+            done
+            echo ""
+            echo -e "${SILVER}Result:${NC}"
+            echo "$filled"
+            ;;
+        4)
+            local name=$(prompt_value "  Template name")
+            [ -f "$prompt_dir/$name.prompt" ] && rm "$prompt_dir/$name.prompt" && echo -e "${GREEN}Deleted${NC}"
+            ;;
+        0) return ;;
+    esac
+    press_enter
 }

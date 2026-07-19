@@ -1,0 +1,17 @@
+# ShellCheck configuration for Palladium
+# https://www.shellcheck.net/
+
+# Don't warn about:
+# SC1091 - Not following sourced files (can't verify at lint time)
+# SC1090 - Can't follow non-constant source
+# SC2034 - Variable appears unused (used in other modules)
+# SC2154 - Variable is referenced but not assigned (assigned in other modules)
+# SC2086 - Double quote to prevent globbing and word splitting (intentional in many cases)
+# SC2116 - Useless echo (intentional for command substitution)
+# SC2162 - read without -r will mangle backslashes
+# SC2155 - Declare and assign separately to avoid masking return values
+
+disable=SC1091,SC1090,SC2034,SC2154
+
+# Shell dialect
+shell=bash

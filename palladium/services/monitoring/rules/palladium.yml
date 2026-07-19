@@ -1,0 +1,103 @@
+groups:
+  - name: palladium.rules
+    rules:
+      # High-level service alerts
+      - alert: ServiceDown
+        expr: up{job="palladium-services"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.service }} is down"
+          description: "{{ $labels.service }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: ServiceHighCPU
+        expr: (rate(container_cpu_usage_seconds_total{job="palladium-services"}[5m]) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.service }}"
+          description: "{{ $labels.service }} CPU usage is above 80% for 5 minutes."
+
+      - alert: ServiceHighMemory
+        expr: (container_memory_usage_bytes{job="palladium-services"} / container_spec_memory_limit_bytes{job="palladium-services"}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.service }}"
+          description: "{{ $labels.service }} memory usage is above 85%."
+
+      - alert: ServiceRestartLoop
+        expr: rate(container_restart_count{job="palladium-services"}[15m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} is restarting frequently"
+          description: "{{ $labels.service }} has restarted {{ $value }} times in the last 15 minutes."
+
+      # System-level alerts
+      - alert: HostHighCPU
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host CPU usage above 90%"
+          description: "Instance {{ $labels.instance }} CPU usage is above 90% for 5 minutes."
+
+      - alert: HostHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host memory usage above 90%"
+          description: "Instance {{ $labels.instance }} memory usage is above 90%."
+
+      - alert: HostDiskFull
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.*"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.*"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space critical on {{ $labels.instance }}"
+          description: "Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is {{ $value | humanizePercentage }} full."
+
+      - alert: HostDiskAlmostFull
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.*"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.*"})) * 100 > 70
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space warning on {{ $labels.instance }}"
+          description: "Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }} is {{ $value | humanizePercentage }} full."
+
+      # Docker-specific alerts
+      - alert: DockerContainerOOMKilled
+        expr: increase(container_oom_events_total[15m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.container }} OOM killed"
+          description: "Container {{ $labels.container }} was OOM killed {{ $value }} times in the last 15 minutes."
+
+      # Prometheus/Loki alerts
+      - alert: PrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus config reload failed"
+          description: "Prometheus configuration reload failed on {{ $labels.instance }}."
+
+      - alert: LokiWriteErrors
+        expr: rate(loki_write_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki write errors"
+          description: "Loki is experiencing write errors on {{ $labels.instance }}."

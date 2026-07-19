@@ -18,10 +18,18 @@ marketplace_browse() {
     echo -e "  ${BOLD}[1]${NC}  ${GREEN}AI & ML${NC}           Local LLMs, API connectors, RAG"
     echo -e "  ${BOLD}[2]${NC}  ${GREEN}Data Tools${NC}        Databases, dashboards, analytics"
     echo -e "  ${BOLD}[3]${NC}  ${GREEN}Automation${NC}        n8n, workflows, scheduling"
-    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Web & APIs${NC}        Reverse proxies, API gateways"
+    echo -e "  ${BOLD}[4]${NC}  ${GREEN}Web & APIs${NC}        Reverse proxies, web servers"
     echo -e "  ${BOLD}[5]${NC}  ${GREEN}DevOps${NC}            Monitoring, CI/CD, containers"
-    echo -e "  ${BOLD}[6]${NC}  ${GREEN}All Tools${NC}         Browse everything"
-    echo -e "  ${BOLD}[7]${NC}  ${MAGENTA}Custom Install${NC}    Install from Docker image or URL"
+    echo -e "  ${BOLD}[6]${NC}  ${GREEN}Messaging${NC}         Message brokers, MQTT, queues"
+    echo -e "  ${BOLD}[7]${NC}  ${GREEN}Storage${NC}           Object storage, cloud drives"
+    echo -e "  ${BOLD}[8]${NC}  ${GREEN}All Tools${NC}         Browse everything"
+    echo ""
+    echo -e "  ${BOLD}Marketplace v2:${NC}"
+    echo -e "  ${BOLD}[r]${NC}  ${YELLOW}Ratings${NC}           View community ratings"
+    echo -e "  ${BOLD}[u]${NC}  ${YELLOW}Check Updates${NC}     Check for tool updates"
+    echo -e "  ${BOLD}[s]${NC}  ${YELLOW}Submit Tool${NC}       Contribute to marketplace"
+    echo ""
+    echo -e "  ${BOLD}[9]${NC}  ${MAGENTA}Custom Install${NC}    Install from Docker image or URL"
     echo -e "  ${BOLD}[0]${NC}  Back"
     echo ""
     read -p "  Select category: " choice
@@ -32,8 +40,13 @@ marketplace_browse() {
         3) marketplace_category "automation" ;;
         4) marketplace_category "web" ;;
         5) marketplace_category "devops" ;;
-        6) marketplace_category "all" ;;
-        7) marketplace_custom_install ;;
+        6) marketplace_category "messaging" ;;
+        7) marketplace_category "files" ;;
+        8) marketplace_category "all" ;;
+        r|R) marketplace_ratings ;;
+        u|U) marketplace_check_updates ;;
+        s|S) marketplace_submit ;;
+        9) marketplace_custom_install ;;
         0) return ;;
     esac
 }
@@ -131,7 +144,6 @@ marketplace_install_tool() {
     mkdir -p "$target/data"
 
     cat > "$target/docker-compose.yml" << COMPOSE
-version: "3.8"
 services:
   $name:
     image: $image
@@ -225,7 +237,6 @@ marketplace_custom_install() {
     mkdir -p "$target/data"
 
     cat > "$target/docker-compose.yml" << COMPOSE
-version: "3.8"
 services:
   $name:
     image: $image
@@ -238,7 +249,7 @@ COMPOSE
     # Extra ports
     if [ -n "$extra_ports" ]; then
         # Remove the last port line and rebuild
-        sed -i "/$port:$port/d" "$target/docker-compose.yml"
+        sed_inplace "/$port:$port/d" "$target/docker-compose.yml"
         echo "    ports:" >> "$target/docker-compose.yml"
         echo "      - \"$port:$port\"" >> "$target/docker-compose.yml"
         IFS=',' read -ra PORT_ARRAY <<< "$extra_ports"
@@ -307,4 +318,172 @@ marketplace_search() {
             echo -e "  ${GREEN}$name${NC} - $desc"
         fi
     done
+}
+
+# ============================================
+# Marketplace v2 Features
+# ============================================
+
+# Rate a tool (1-5 stars)
+marketplace_rate() {
+    local tool_file="$1"
+    local name=$(basename "$tool_file" .tool)
+    local rating_file="$DATA_DIR/marketplace/ratings/$name.rating"
+    
+    mkdir -p "$(dirname "$rating_file")"
+    
+    echo -e "${SILVER}${BOLD}  ═══ Rate $name ═══${NC}"
+    echo ""
+    
+    local current_avg=$(cat "$rating_file" 2>/dev/null || echo "0:0")
+    local avg=$(echo "$current_avg" | cut -d: -f1)
+    local count=$(echo "$current_avg" | cut -d: -f2)
+    echo -e "  Current rating: ${YELLOW}$avg${NC} stars (${count} votes)"
+    echo ""
+    
+    local rating=$(prompt_value "  Your rating (1-5)" "5")
+    [[ "$rating" =~ ^[1-5]$ ]] || { echo -e "${RED}Invalid rating${NC}"; return 1; }
+    
+    local new_count=$((count + 1))
+    local new_avg=$(awk "BEGIN {printf \"%.1f\", (($avg * $count) + $rating) / $new_count}")
+    echo "$new_avg:$new_count" > "$rating_file"
+    
+    echo -e "${GREEN}  Thanks! New average: $new_avg stars ($new_count votes)${NC}"
+    press_enter
+}
+
+# Check for tool updates
+marketplace_check_updates() {
+    echo -e "${SILVER}${BOLD}  ═══ Checking Tool Updates ═══${NC}"
+    echo ""
+    
+    local updates_found=0
+    
+    for tool_file in "$MARKETPLACE_DIR"/*.tool; do
+        [ -f "$tool_file" ] || continue
+        local name=$(basename "$tool_file" .tool)
+        local image=$(grep "^image:" "$tool_file" | head -1 | sed 's/^image: //')
+        local current_digest=$(docker inspect --format='{{.Id}}' "$image" 2>/dev/null | cut -d: -f2 | head -c 12)
+        
+        # Check if image exists locally
+        if [ -z "$current_digest" ]; then
+            echo -e "  ${YELLOW}$name${NC} - Not installed locally"
+            continue
+        fi
+        
+        # Pull latest to check
+        echo -n "  Checking $name... "
+        local latest_digest=$(docker pull "$image" 2>/dev/null | grep -oE 'sha256:[a-f0-9]{12}' | head -1)
+        
+        if [ -n "$latest_digest" ] && [ "$latest_digest" != "$current_digest" ]; then
+            echo -e "${GREEN}Update available${NC} (current: ${current_digest}, latest: ${latest_digest})"
+            updates_found=1
+        else
+            echo -e "${GREEN}Up to date${NC}"
+        fi
+    done
+    
+    echo ""
+    if [ $updates_found -eq 1 ]; then
+        echo -e "${YELLOW}Updates available. Use 'palladium marketplace update <tool>' to update.${NC}"
+    else
+        echo -e "${GREEN}All tools up to date!${NC}"
+    fi
+    press_enter
+}
+
+# Update a specific tool
+marketplace_update_tool() {
+    local name="$1"
+    local tool_file="$MARKETPLACE_DIR/$name.tool"
+    
+    [ -f "$tool_file" ] || { echo -e "${RED}Tool not found: $name${NC}"; return 1; }
+    
+    local image=$(grep "^image:" "$tool_file" | head -1 | sed 's/^image: //')
+    local target="$INSTALLED_DIR/$name"
+    
+    [ -d "$target" ] || { echo -e "${RED}Tool not installed: $name${NC}"; return 1; }
+    
+    echo -e "${YELLOW}Updating $name...${NC}"
+    
+    # Pull latest image
+    docker pull "$image" || { echo -e "${RED}Failed to pull image${NC}"; return 1; }
+    
+    # Restart with new image
+    cd "$target"
+    docker compose down 2>/dev/null || docker-compose down 2>/dev/null
+    docker compose up -d 2>/dev/null || docker-compose up -d 2>/dev/null
+    
+    echo -e "${GREEN}$name updated successfully!${NC}"
+    press_enter
+}
+
+# Submit a new tool to marketplace (generates PR template)
+marketplace_submit() {
+    echo -e "${SILVER}${BOLD}  ═══ Submit Tool to Marketplace ═══${NC}"
+    echo ""
+    echo "This will generate a .tool file and GitHub PR template."
+    echo ""
+    
+    local name=$(prompt_value "  Tool name (lowercase, no spaces)")
+    [[ "$name" =~ ^[a-z0-9-]+$ ]] || { echo -e "${RED}Invalid name${NC}"; return 1; }
+    
+    local desc=$(prompt_value "  Short description")
+    local image=$(prompt_value "  Docker image")
+    local port=$(prompt_value "  Port" "8080")
+    local category=$(prompt_value "  Category (ai/data/automation/web/devops/messaging/storage)" "web")
+    local volumes=$(prompt_value "  Volumes (comma-separated, e.g. ./data:/data)" "")
+    local env=$(prompt_value "  Environment vars (KEY=VAL,KEY2=VAL2)" "")
+    
+    local tool_file="$MARKETPLACE_DIR/$name.tool"
+    
+    cat > "$tool_file" << EOF
+# Generated by marketplace_submit on $(date)
+# Submit via PR to https://github.com/M-2000-0/Palladium
+name: $name
+desc: $desc
+image: $image
+port: $port
+category: $category
+EOF
+    
+    [ -n "$volumes" ] && echo "volumes: $volumes" >> "$tool_file"
+    [ -n "$env" ] && echo "env: $env" >> "$tool_file"
+    
+    echo ""
+    echo -e "${GREEN}Tool file created: $tool_file${NC}"
+    echo ""
+    echo "To submit to the official marketplace:"
+    echo "  1. Fork https://github.com/M-2000-0/Palladium"
+    echo "  2. Add this file to palladium/marketplace/"
+    echo "  3. Create a Pull Request"
+    echo ""
+    press_enter
+}
+
+# View tool ratings
+marketplace_ratings() {
+    echo -e "${SILVER}${BOLD}  ═══ Tool Ratings ═══${NC}"
+    echo ""
+    
+    for tool_file in "$MARKETPLACE_DIR"/*.tool; do
+        [ -f "$tool_file" ] || continue
+        local name=$(basename "$tool_file" .tool)
+        local rating_file="$DATA_DIR/marketplace/ratings/$name.rating"
+        local current_avg=$(cat "$rating_file" 2>/dev/null || echo "0:0")
+        local avg=$(echo "$current_avg" | cut -d: -f1)
+        local count=$(echo "$current_avg" | cut -d: -f2)
+        
+        local stars=""
+        for i in $(seq 1 5); do
+            if [ $(echo "$avg >= $i" | bc -l 2>/dev/null || echo 0) -eq 1 ]; then
+                stars="${stars}★"
+            else
+                stars="${stars}☆"
+            fi
+        done
+        printf "  %-20s %s (%.1f, %d votes)\n" "$name" "$stars" "$avg" "$count"
+    done
+    echo ""
+    press_enter
 }

@@ -1,0 +1,34 @@
+# Winget manifest for Palladium
+# Submit to: https://github.com/microsoft/winget-pkgs
+
+PackageIdentifier: PalladiumTeam.Palladium
+PackageVersion: 1.1.0
+PackageName: Palladium
+Publisher: Palladium Team
+Author: Palladium Team
+License: MIT
+LicenseUrl: https://github.com/M-2000-0/Palladium/blob/main/LICENSE
+Copyright: Copyright (c) 2026 Palladium Team
+ShortDescription: Universal Portable Server Manager
+Description: Palladium is a universal portable server manager that runs self-hosted services from a USB/SSD on any machine with Docker. Features 50+ pre-integrated services, AI toolkit (Ollama, API connectors, RAG), marketplace, monitoring (Prometheus/Grafana/Loki), backup/clone, security (secrets vault, 2FA, CIS Docker bench), and more.
+Homepage: https://github.com/M-2000-0/Palladium
+Tags:
+- docker
+- self-hosted
+- portable
+- usb
+- homelab
+- devops
+- ai
+- monitoring
+Installers:
+- Architecture: x64
+  InstallerType: zip
+  InstallerUrl: https://github.com/M-2000-0/Palladium/releases/download/v1.1.0/palladium-windows.zip
+  InstallerSha256: REPLACE_WITH_SHA256
+  NestedInstallerType: portable
+  NestedInstallerFiles:
+  - RelativeFilePath: palladium/palladium
+    PortableCommandAlias: palladium
+ManifestType: installer
+ManifestVersion: 1.5.0

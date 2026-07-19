@@ -24,10 +24,11 @@ svc_start() {
     local d="$INSTALLED_DIR/$svc"
     [ ! -d "$d" ] && { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
     ensure_docker || return 1
-    cd "$d"
-    echo -e "${GREEN}Starting $svc...${NC}"
-    docker compose up -d || docker-compose up -d
-    echo -e "${GREEN}$svc started.${NC}"
+    cd "$d" || { echo -e "${RED}Cannot access $d${NC}"; return 1; }
+    with_lock "service_${svc}" bash -c "
+        echo -e '${GREEN}Starting $svc...${NC}'
+        docker compose up -d 2>/dev/null || docker-compose up -d 2>/dev/null
+    " && echo -e "${GREEN}$svc started.${NC}" || echo -e "${RED}Failed to start $svc${NC}"
 }
 
 svc_stop() {
@@ -35,24 +36,24 @@ svc_stop() {
     [ -z "$svc" ] && { echo -e "${RED}Service name required.${NC}"; return 1; }
     local d="$INSTALLED_DIR/$svc"
     [ ! -d "$d" ] && { echo -e "${RED}Service '$svc' not found.${NC}"; return 1; }
-    cd "$d"
+    cd "$d" || { echo -e "${RED}Cannot access $d${NC}"; return 1; }
     echo -e "${YELLOW}Stopping $svc...${NC}"
-    docker compose down || docker-compose down
+    docker compose down 2>/dev/null || docker-compose down 2>/dev/null
     echo -e "${GREEN}$svc stopped.${NC}"
 }
 
 svc_status() {
     if [ -n "$1" ]; then
         [ ! -d "$INSTALLED_DIR/$1" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
-        cd "$INSTALLED_DIR/$1"
-        docker compose ps || docker-compose ps
+        cd "$INSTALLED_DIR/$1" || { echo -e "${RED}Cannot access directory${NC}"; return 1; }
+        docker compose ps 2>/dev/null || docker-compose ps 2>/dev/null
     else
         echo -e "${SILVER}All services:${NC}"
         for d in "$INSTALLED_DIR"/*/; do
             [ -d "$d" ] || continue
             echo -e "${BOLD}$(basename "$d"):${NC}"
-            cd "$d"
-            docker compose ps || docker-compose ps
+            cd "$d" || continue
+            docker compose ps 2>/dev/null || docker-compose ps 2>/dev/null
             echo ""
         done
     fi
@@ -62,17 +63,17 @@ svc_logs() {
     local svc="$1"
     [ -z "$svc" ] && { echo -e "${RED}Service name required.${NC}"; return 1; }
     [ ! -d "$INSTALLED_DIR/$svc" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
-    cd "$INSTALLED_DIR/$svc"
-    docker compose logs -f --tail=100 || docker-compose logs -f --tail=100
+    cd "$INSTALLED_DIR/$svc" || { echo -e "${RED}Cannot access directory${NC}"; return 1; }
+    docker compose logs -f --tail=100 2>/dev/null || docker-compose logs -f --tail=100
 }
 
 svc_remove() {
     local svc="$1"
     [ -z "$svc" ] && { echo -e "${RED}Service name required.${NC}"; return 1; }
     [ ! -d "$INSTALLED_DIR/$svc" ] && { echo -e "${RED}Not found.${NC}"; return 1; }
-    cd "$INSTALLED_DIR/$svc"
+    cd "$INSTALLED_DIR/$svc" || { echo -e "${RED}Cannot access directory${NC}"; return 1; }
     echo -e "${YELLOW}Stopping $svc...${NC}"
-    docker compose down -v || docker-compose down -v
+    docker compose down -v 2>/dev/null || docker-compose down -v 2>/dev/null
     rm -rf "$INSTALLED_DIR/$svc"
     echo -e "${GREEN}$svc removed.${NC}"
 }

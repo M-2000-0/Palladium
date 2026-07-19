@@ -67,6 +67,12 @@ source "$MODULES_DIR/help.sh"
 source "$MODULES_DIR/autorun.sh"
 source "$MODULES_DIR/dashboard-tui.sh"
 source "$MODULES_DIR/menu.sh"
+source "$MODULES_DIR/remote.sh"
+source "$MODULES_DIR/api.sh"
+
+# Load plugins after all core modules
+PLUGINS_DIR="$PALLADIUM_HOME/plugins"
+load_plugins
 
 # On Windows, add Docker CLI to PATH if not found
 ensure_docker_in_path
@@ -138,6 +144,7 @@ case "${1:-}" in
     drive)       shift; show_usb_info ;;
     install-to)  shift; install_to_drive "$@" ;;
     install-tools|tools) install_tools ;;
+    remote)      shift; remote_menu "$@" ;;
     help)        show_help ;;
     *)           main_menu ;;
 esac

@@ -19,6 +19,14 @@ Thumbs.db
 *.swp
 *.swo
 
+# Tests / local artifacts
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+*.coverage
+*.pytest_cache/
+
 # Logs
 *.log
 
